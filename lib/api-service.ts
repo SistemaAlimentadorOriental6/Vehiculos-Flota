@@ -57,80 +57,72 @@ export async function uploadPhoto(
   onProgress?: (progress: number, status: "uploading" | "success" | "error", message?: string) => void,
 ): Promise<{ success: boolean; message: string; data?: any }> {
   try {
-    // Verificar que la URL base sea HTTPS
+    // 1. Verificar configuración de entorno
     if (!API_BASE_URL.startsWith('https://')) {
-      throw new Error('Configuración incorrecta: La URL de la API debe usar HTTPS');
+      throw new Error('Configuración insegura detectada');
     }
 
+    // 2. Iniciar progreso
     onProgress?.(0, "uploading");
 
-    // Simulador de progreso mejorado
-    const simulateProgress = () => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress = Math.min(progress + Math.random() * 15, 90);
-        onProgress?.(progress, "uploading");
-        if (progress >= 90) clearInterval(interval);
-      }, 300);
-      return interval;
-    };
+    // 3. Simulador de progreso optimizado
+    // 3. Simulador de progreso corregido
+    let currentProgress = 0;
+    const progressInterval = setInterval(() => {
+        currentProgress = Math.min(currentProgress + 10, 90); // Límite en 90%
+        onProgress?.(currentProgress, "uploading");
+    }, 300);
 
-    const progressInterval = simulateProgress();
-
-    // Convertir y preparar datos
+    // 4. Preparar datos del formulario
     const blob = base64ToBlob(photoData);
     const formData = new FormData();
     formData.append("file", blob, `${viewName}.jpg`);
     formData.append("vehiculo", vehicleId);
 
-    // Forzar modo CORS y cabeceras de seguridad
+    // 5. Configuración especial para redirecciones
+    const finalUrl = `${API_BASE_URL}/upload/`; // Notar la barra final
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-    const response = await fetch(`${API_BASE_URL}/upload`, {
+    // 6. Realizar la petición con manejo de redirecciones
+    const response = await fetch(finalUrl, {
       method: "POST",
       body: formData,
-      mode: 'cors',
-      credentials: 'omit',
-      redirect: 'error',
       signal: controller.signal,
+      redirect: 'follow', // Cambiado para seguir redirecciones
       headers: {
-        'Secure-Feature-Policy': "geolocation 'self'"
+        'Content-Security-Policy': "default-src 'self' https:",
+        'Origin': window.location.origin
       }
     });
 
+    // 7. Limpiar temporizadores
     clearTimeout(timeoutId);
     clearInterval(progressInterval);
 
-    // Verificar tipo de contenido de la respuesta
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new Error('Respuesta inválida del servidor');
-    }
-
-    const data = await response.json();
-
+    // 8. Manejar respuesta del servidor
     if (!response.ok) {
-      const errorMessage = data.detail || `Error HTTP ${response.status}`;
-      onProgress?.(100, "error", errorMessage);
-      throw new Error(errorMessage);
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${errorText.slice(0, 100)}`);
     }
 
+    // 9. Notificar éxito
     onProgress?.(100, "success");
     return {
       success: true,
-      message: data.message || "Subida exitosa",
-      data
+      message: "Imagen subida exitosamente",
+      data: await response.json()
     };
-  } catch (error) {
-    console.error("Error crítico en uploadPhoto:", error);
-    
-    const errorMessage = error instanceof Error 
-      ? error.message 
-      : "Falla crítica en comunicación con el servidor";
 
+  } catch (error) {
+    // 10. Manejo mejorado de errores
+    const errorMessage = error instanceof Error 
+      ? error.message.replace('Failed to fetch', 'Error de conexión con el servidor')
+      : "Falla crítica en el sistema";
+
+    console.error(`Error en subida: ${errorMessage}`);
     onProgress?.(100, "error", errorMessage);
-    
+
     return {
       success: false,
       message: errorMessage,
