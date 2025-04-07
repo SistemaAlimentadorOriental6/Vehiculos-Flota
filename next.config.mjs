@@ -23,7 +23,7 @@ const nextConfig = {
     domains: ['imagenesflota.sao6.com.co'], // Permitir imágenes desde el servidor de producción
     remotePatterns: [
       {
-        protocol: 'http',
+        protocol: 'https',
         hostname: 'imagenesflota.sao6.com.co',
         port: '',
         pathname: '/**',
