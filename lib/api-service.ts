@@ -328,7 +328,7 @@ function normalizeImageUrl(url: string, vehicleId: string, filename?: string): s
   }
   
   // Si la URL es absoluta pero apunta a otro servidor (como 127.0.0.1), corregirla
-  if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+  if (url && (url.startsWith('https://') || url.startsWith('https://'))) {
     // Extraer la ruta relativa
     try {
       const urlObj = new URL(url)
