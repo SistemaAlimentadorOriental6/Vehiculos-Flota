@@ -85,13 +85,9 @@ export async function uploadPhoto(
     formData.append("vehiculo", vehicleId)
 
     // Hacer la solicitud a la API de producción
-    const response = await fetch(`${API_BASE_URL}/upload`, {
+    const response = await fetch('https://imagenesflota.sao6.com.co/upload', {
       method: "POST",
       body: formData,
-      // Añadir headers que puedan ser necesarios para tu API
-      // headers: {
-      //   'Authorization': 'Bearer YOUR_TOKEN_HERE', // Si necesitas autenticación
-      // },
     })
 
     // Detener la simulación de progreso
