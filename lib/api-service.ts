@@ -347,7 +347,7 @@ function normalizeImageUrl(url: string, vehicleId: string, filename?: string): s
   }
 
   // Si la URL es relativa, convertirla en absoluta
-  if (url && !url.startsWith('http')) {
+  if (url && !url.startsWith('https')) {
     return `${API_BASE_URL}/${url.startsWith('/') ? url.substring(1) : url}?t=${Date.now()}`
   }
 
