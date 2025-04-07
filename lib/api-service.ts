@@ -343,7 +343,7 @@ function normalizeImageUrl(url: string, vehicleId: string, filename?: string): s
 
   // Si tenemos un nombre de archivo, construir la URL
   if (filename) {
-    return `${API_BASE_URL}/image/${vehicleId}/${filename}?t=${Date.now()}`
+    return `${API_BASE_URL}/images/${vehicleId}/${filename}?t=${Date.now()}`
   }
 
   // Si la URL es relativa, convertirla en absoluta
