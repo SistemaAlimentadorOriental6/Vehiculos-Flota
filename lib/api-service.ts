@@ -57,19 +57,20 @@ export async function uploadPhoto(
   onProgress?: (progress: number, status: "uploading" | "success" | "error", message?: string) => void,
 ): Promise<{ success: boolean; message: string; data?: any }> {
   try {
-    // Notificar inicio de carga
+    // Verificar que la URL base sea HTTPS
+    if (!API_BASE_URL.startsWith('https://')) {
+      throw new Error('Configuración incorrecta: La URL de la API debe usar HTTPS');
+    }
+
     onProgress?.(0, "uploading");
 
-    // Función para simular progreso
+    // Simulador de progreso mejorado
     const simulateProgress = () => {
       let progress = 0;
       const interval = setInterval(() => {
-        progress += Math.random() * 15;
-        if (progress > 90) {
-          clearInterval(interval);
-          progress = 90;
-        }
-        onProgress?.(Math.min(progress, 90), "uploading");
+        progress = Math.min(progress + Math.random() * 15, 90);
+        onProgress?.(progress, "uploading");
+        if (progress >= 90) clearInterval(interval);
       }, 300);
       return interval;
     };
@@ -82,44 +83,52 @@ export async function uploadPhoto(
     formData.append("file", blob, `${viewName}.jpg`);
     formData.append("vehiculo", vehicleId);
 
-    // Hacer la solicitud usando API_BASE_URL
+    // Forzar modo CORS y cabeceras de seguridad
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     const response = await fetch(`${API_BASE_URL}/upload`, {
       method: "POST",
       body: formData,
+      mode: 'cors',
+      credentials: 'omit',
+      redirect: 'error',
+      signal: controller.signal,
+      headers: {
+        'Secure-Feature-Policy': "geolocation 'self'"
+      }
     });
 
+    clearTimeout(timeoutId);
     clearInterval(progressInterval);
 
-    // Manejar errores HTTP
+    // Verificar tipo de contenido de la respuesta
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Respuesta inválida del servidor');
+    }
+
+    const data = await response.json();
+
     if (!response.ok) {
-      let errorData;
-      try {
-        errorData = await response.json();
-      } catch {
-        errorData = { detail: `Error ${response.status}: ${response.statusText}` };
-      }
-      
-      const errorMessage = errorData.detail || `Error en la solicitud: ${response.status}`;
+      const errorMessage = data.detail || `Error HTTP ${response.status}`;
       onProgress?.(100, "error", errorMessage);
       throw new Error(errorMessage);
     }
 
-    // Procesar respuesta exitosa
-    const data = await response.json();
     onProgress?.(100, "success");
-    
     return {
       success: true,
-      message: data.message || "Imagen subida exitosamente",
+      message: data.message || "Subida exitosa",
       data
     };
   } catch (error) {
-    console.error("Error en uploadPhoto:", error);
+    console.error("Error crítico en uploadPhoto:", error);
     
     const errorMessage = error instanceof Error 
       ? error.message 
-      : "Error desconocido al subir la imagen";
-    
+      : "Falla crítica en comunicación con el servidor";
+
     onProgress?.(100, "error", errorMessage);
     
     return {
