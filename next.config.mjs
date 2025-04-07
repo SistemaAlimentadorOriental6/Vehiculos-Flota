@@ -20,11 +20,11 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ['192.168.90.33'], // Permitir imágenes desde el servidor de producción
+    domains: ['imagenesflota.sao6.com.co'], // Permitir imágenes desde el servidor de producción
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: '192.168.90.33',
+        hostname: 'imagenesflota.sao6.com.co',
         port: '',
         pathname: '/**',
       },
@@ -54,7 +54,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://192.168.90.33/api/:path*', // Proxy para evitar problemas CORS
+        destination: 'https://imagenesflota.sao6.com.co/:path*', // Proxy para evitar problemas CORS
       },
     ];
   },

@@ -1,7 +1,7 @@
-// Servicio API para conectar directamente con la API de producción en http://192.168.90.33/api
+// Servicio API para conectar directamente con la API de producción en https://192.168.90.33/api
 
 // URL base de la API de producción
-const API_BASE_URL = "http://192.168.90.33/api"
+const API_BASE_URL = "https://imagenesflota.sao6.com.co"
 
 /**
  * Convierte una imagen base64 a un archivo Blob
