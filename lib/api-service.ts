@@ -58,73 +58,74 @@ export async function uploadPhoto(
 ): Promise<{ success: boolean; message: string; data?: any }> {
   try {
     // Notificar inicio de carga
-    onProgress?.(0, "uploading")
+    onProgress?.(0, "uploading");
 
-    // Crear una función para simular el progreso ya que fetch no tiene eventos de progreso nativos
+    // Función para simular progreso
     const simulateProgress = () => {
-      let progress = 0
+      let progress = 0;
       const interval = setInterval(() => {
-        progress += Math.random() * 15
+        progress += Math.random() * 15;
         if (progress > 90) {
-          clearInterval(interval)
-          progress = 90 // Mantener en 90% hasta que se complete
+          clearInterval(interval);
+          progress = 90;
         }
-        onProgress?.(Math.min(progress, 90), "uploading")
-      }, 300)
-      return interval
-    }
+        onProgress?.(Math.min(progress, 90), "uploading");
+      }, 300);
+      return interval;
+    };
 
-    const progressInterval = simulateProgress()
+    const progressInterval = simulateProgress();
 
-    // Convertir la imagen base64 a Blob
-    const blob = base64ToBlob(photoData)
+    // Convertir y preparar datos
+    const blob = base64ToBlob(photoData);
+    const formData = new FormData();
+    formData.append("file", blob, `${viewName}.jpg`);
+    formData.append("vehiculo", vehicleId);
 
-    // Crear un objeto FormData para enviar la imagen
-    const formData = new FormData()
-    formData.append("file", blob, `${viewName}.jpg`)
-    formData.append("vehiculo", vehicleId)
-
-    // Hacer la solicitud a la API de producción
-    const response = await fetch('https://imagenesflota.sao6.com.co/upload', {
+    // Hacer la solicitud usando API_BASE_URL
+    const response = await fetch(`${API_BASE_URL}/upload`, {
       method: "POST",
       body: formData,
-    })
+    });
 
-    // Detener la simulación de progreso
-    clearInterval(progressInterval)
+    clearInterval(progressInterval);
 
-    // Verificar si la solicitud fue exitosa
+    // Manejar errores HTTP
     if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ detail: `Error ${response.status}: ${response.statusText}` }))
-
-      const errorMessage = errorData.detail || `Error ${response.status}: ${response.statusText}`
-      onProgress?.(100, "error", errorMessage)
-
-      throw new Error(errorMessage)
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { detail: `Error ${response.status}: ${response.statusText}` };
+      }
+      
+      const errorMessage = errorData.detail || `Error en la solicitud: ${response.status}`;
+      onProgress?.(100, "error", errorMessage);
+      throw new Error(errorMessage);
     }
 
-    // Notificar éxito con 100%
-    onProgress?.(100, "success")
-
-    // Devolver la respuesta del servidor
-    const data = await response.json()
+    // Procesar respuesta exitosa
+    const data = await response.json();
+    onProgress?.(100, "success");
+    
     return {
       success: true,
-      message: data.message || "Imagen guardada con éxito",
-      data,
-    }
+      message: data.message || "Imagen subida exitosamente",
+      data
+    };
   } catch (error) {
-    console.error("Error al subir la imagen:", error)
-
-    const errorMessage = error instanceof Error ? error.message : "Error desconocido al subir la imagen"
-    onProgress?.(100, "error", errorMessage)
-
+    console.error("Error en uploadPhoto:", error);
+    
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : "Error desconocido al subir la imagen";
+    
+    onProgress?.(100, "error", errorMessage);
+    
     return {
       success: false,
       message: errorMessage,
-    }
+    };
   }
 }
 
