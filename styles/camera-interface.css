@@ -1,0 +1,115 @@
+/* Enhanced camera interface styles */
+.camera-container {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .camera-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .camera-frame {
+    position: absolute;
+    inset: 0;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+    border-radius: 0.5rem;
+  }
+  
+  .camera-frame-corner {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    border-color: white;
+  }
+  
+  .capture-flash {
+    animation: flash 300ms ease-out;
+  }
+  
+  @keyframes flash {
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  
+  .focus-animation {
+    animation: focus-ripple 800ms ease-out;
+  }
+  
+  @keyframes focus-ripple {
+    0% {
+      transform: scale(0.5);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+  
+  /* Responsive adjustments */
+  @media (orientation: landscape) {
+    .landscape-mode {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  
+    .landscape-mode video {
+      height: 100%;
+      width: auto;
+      max-width: 100%;
+    }
+  }
+  
+  /* Loading spinner */
+  .loading-spinner {
+    width: 64px;
+    height: 64px;
+    border: 4px solid rgba(22, 163, 74, 0.2);
+    border-left-color: #16a34a;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Capture button pulse */
+  .capture-button {
+    position: relative;
+  }
+  
+  .capture-button:after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    animation: pulse 2s ease-out infinite;
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1.2);
+      opacity: 0;
+    }
+  }
+  
+  
