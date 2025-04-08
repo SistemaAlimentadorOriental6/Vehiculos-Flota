@@ -8,7 +8,7 @@ import { CheckCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useNotifications } from "@/hooks/use-notifications"
 import { NotificationContainer } from "@/components/notification-toast"
-import EnhancedHeaderV2 from "@/components/enhanced-header-v2"
+import PremiumHeader from "@/components/premium-header"
 import EnhancedPhotoGallery from "@/components/enhanced-photo-gallery"
 import PhotoSummary from "@/components/photo-summary"
 import EnhancedCameraInterface from "@/components/enhanced-camera-interface"
@@ -185,7 +185,7 @@ export default function CapturaPage() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 dark:text-white flex flex-col">
-        <EnhancedHeaderV2 />
+        <PremiumHeader />
         <VersionNotification />
 
         <main className="flex-1 flex flex-col p-4 max-w-md mx-auto w-full">
@@ -316,4 +316,3 @@ export default function CapturaPage() {
     </ProtectedRoute>
   )
 }
-

@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect, useRef } from "react"
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import {
   Camera,
   Menu,
@@ -12,13 +12,16 @@ import {
   ChevronDown,
   Settings,
   LogOut,
-  Home,
-  Image,
+  ImageIcon,
   HelpCircle,
   Sun,
   Moon,
   Laptop,
   Palette,
+  FileText,
+  LayoutDashboard,
+  Zap,
+  Sparkles,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -50,6 +53,13 @@ export default function EnhancedHeaderV2() {
   const { user, logout } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
+  const headerRef = useRef<HTMLDivElement>(null)
+
+  // Scroll effects
+  const { scrollY } = useScroll()
+  const headerBgOpacity = useTransform(scrollY, [0, 100], [0, 1])
+  const headerShadow = useTransform(scrollY, [0, 100], ["0px 0px 0px rgba(0,0,0,0)", "0px 10px 30px rgba(0,0,0,0.1)"])
+  const logoScale = useTransform(scrollY, [0, 100], [1, 0.9])
 
   useEffect(() => {
     setIsMounted(true)
@@ -114,6 +124,8 @@ export default function EnhancedHeaderV2() {
           darkBg: "dark:bg-blue-950",
           darkText: "dark:text-blue-300",
           darkHoverBg: "dark:hover:bg-blue-900",
+          activeNavBg: "bg-blue-100 dark:bg-blue-900/30",
+          activeNavText: "text-blue-700 dark:text-blue-300",
         }
       case "purple":
         return {
@@ -126,6 +138,8 @@ export default function EnhancedHeaderV2() {
           darkBg: "dark:bg-purple-950",
           darkText: "dark:text-purple-300",
           darkHoverBg: "dark:hover:bg-purple-900",
+          activeNavBg: "bg-purple-100 dark:bg-purple-900/30",
+          activeNavText: "text-purple-700 dark:text-purple-300",
         }
       case "amber":
         return {
@@ -138,6 +152,8 @@ export default function EnhancedHeaderV2() {
           darkBg: "dark:bg-amber-950",
           darkText: "dark:text-amber-300",
           darkHoverBg: "dark:hover:bg-amber-900",
+          activeNavBg: "bg-amber-100 dark:bg-amber-900/30",
+          activeNavText: "text-amber-700 dark:text-amber-300",
         }
       case "rose":
         return {
@@ -150,6 +166,8 @@ export default function EnhancedHeaderV2() {
           darkBg: "dark:bg-rose-950",
           darkText: "dark:text-rose-300",
           darkHoverBg: "dark:hover:bg-rose-900",
+          activeNavBg: "bg-rose-100 dark:bg-rose-900/30",
+          activeNavText: "text-rose-700 dark:text-rose-300",
         }
       default:
         return {
@@ -162,6 +180,8 @@ export default function EnhancedHeaderV2() {
           darkBg: "dark:bg-green-950",
           darkText: "dark:text-green-300",
           darkHoverBg: "dark:hover:bg-green-900",
+          activeNavBg: "bg-green-100 dark:bg-green-900/30",
+          activeNavText: "text-green-700 dark:text-green-300",
         }
     }
   }
@@ -184,14 +204,15 @@ export default function EnhancedHeaderV2() {
 
   // Elementos de navegación
   const navItems = [
-    { name: "Inicio", href: "/dashboard", icon: <Home className="h-4 w-4" /> },
+    { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
     { name: "Captura", href: "/captura", icon: <Camera className="h-4 w-4" /> },
-    { name: "Galería", href: "/dashboard?view=gallery", icon: <Image className="h-4 w-4" /> },
+    { name: "Galería", href: "/dashboard?view=gallery", icon: <ImageIcon className="h-4 w-4" /> },
+    { name: "Reportes", href: "#", icon: <FileText className="h-4 w-4" /> },
   ]
 
   // Verificar si el enlace está activo
   const isLinkActive = (href: string) => {
-    if (href === "/dashboard" && pathname === "/dashboard") {
+    if (href === "/dashboard" && pathname === "/dashboard" && !window.location.search.includes("view=gallery")) {
       return true
     }
     if (href === "/captura" && pathname === "/captura") {
@@ -200,7 +221,6 @@ export default function EnhancedHeaderV2() {
     if (
       href === "/dashboard?view=gallery" &&
       pathname === "/dashboard" &&
-      typeof window !== "undefined" &&
       window.location.search.includes("view=gallery")
     ) {
       return true
@@ -211,266 +231,360 @@ export default function EnhancedHeaderV2() {
   return (
     <>
       <motion.header
+        ref={headerRef}
+        style={{
+          boxShadow: isMounted ? headerShadow : "none",
+          backgroundColor:
+            theme === "dark" ? "rgb(3, 7, 18)" : `rgba(255, 255, 255, ${isMounted ? headerBgOpacity.get() : 0})`,
+        }}
         className={cn(
-          "sticky top-0 z-50 w-full border-b",
-          theme === "dark" ? "bg-gray-950 border-gray-800 text-white" : "bg-white border-gray-100",
+          "sticky top-0 z-50 w-full backdrop-blur-md",
+          theme === "dark" ? "border-gray-800 text-white" : "border-gray-100",
         )}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 20 }}
       >
-        <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2 md:gap-4">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <motion.div
-                whileHover={{ rotate: 5, scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={cn("bg-gradient-to-r p-2 rounded-xl shadow-md", themeColors.bgGradient)}
-              >
-                <Camera className="h-6 w-6 text-white" />
-              </motion.div>
-              <div className="hidden sm:block">
-                <h1 className="font-bold text-xl flex">
-                  {title.split("").map((char, i) => (
-                    <motion.span
-                      key={i}
-                      custom={i}
-                      variants={letterVariants}
-                      initial="hidden"
-                      animate="visible"
-                      className={char === "-" ? "mx-1" : ""}
-                    >
-                      {char === " " ? "\u00A0" : char}
-                    </motion.span>
-                  ))}
-                </h1>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5, duration: 0.3 }}
-                  className={cn("text-xs", themeColors.textColor, themeColors.darkText)}
-                >
-                  Sistema profesional de documentación
-                </motion.p>
-              </div>
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-1 md:gap-2">
-            {/* Search button/bar */}
-            <AnimatePresence>
-              {searchOpen ? (
+        <div className="container mx-auto px-4">
+          <div className="flex h-16 items-center justify-between">
+            <div className="flex items-center gap-2 md:gap-4">
+              <Link href="/dashboard" className="flex items-center gap-2">
                 <motion.div
-                  initial={{ width: 40, opacity: 0 }}
-                  animate={{ width: 200, opacity: 1 }}
-                  exit={{ width: 40, opacity: 0 }}
-                  className="relative"
+                  style={{ scale: logoScale }}
+                  whileHover={{ rotate: 5, scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={cn(
+                    "bg-gradient-to-r p-2 rounded-xl shadow-md relative overflow-hidden group",
+                    themeColors.bgGradient,
+                  )}
                 >
-                  <input
-                    type="text"
-                    placeholder="Buscar vehículo..."
-                    className={cn(
-                      "w-full h-9 px-3 py-2 text-sm rounded-md border",
-                      theme === "dark"
-                        ? "bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
-                        : "bg-white border-gray-200",
-                    )}
-                    autoFocus
+                  <Camera className="h-6 w-6 text-white relative z-10" />
+                  <motion.div
+                    className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 0 }}
+                    transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
                   />
-                  <button
-                    className={cn(
-                      "absolute right-2 top-1/2 transform -translate-y-1/2",
-                      theme === "dark" ? "text-gray-400" : "text-gray-500",
-                    )}
-                    onClick={() => setSearchOpen(false)}
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
                 </motion.div>
-              ) : (
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className={cn("p-2 rounded-full", theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100")}
-                  onClick={() => setSearchOpen(true)}
-                >
-                  <Search className="h-5 w-5" />
-                </motion.button>
-              )}
-            </AnimatePresence>
-
-            {/* Notifications */}
-            <div className="relative">
-              <button className={cn("p-2 rounded-full", theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100")}>
-                <Bell className="h-5 w-5" />
-                {notifications > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {notifications}
-                  </span>
-                )}
-              </button>
+                <div className="hidden sm:block">
+                  <h1 className="font-bold text-xl flex">
+                    {title.split("").map((char, i) => (
+                      <motion.span
+                        key={i}
+                        custom={i}
+                        variants={letterVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className={char === "-" ? "mx-1" : ""}
+                      >
+                        {char === " " ? "\u00A0" : char}
+                      </motion.span>
+                    ))}
+                  </h1>
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5, duration: 0.3 }}
+                    className={cn("text-xs", themeColors.textColor, themeColors.darkText)}
+                  >
+                    Sistema profesional de documentación
+                  </motion.p>
+                </div>
+              </Link>
             </div>
 
-            {/* Theme Selector */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className={cn(
-                    "p-2 rounded-full hidden md:flex",
-                    theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
-                  )}
-                >
-                  <Settings className="h-5 w-5" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Personalización</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <Palette className="h-4 w-4 mr-2" />
-                    <span>Color del Tema</span>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuSubContent>
-                      <DropdownMenuItem onClick={() => changeColorTheme("green")}>
-                        <div className="h-4 w-4 rounded-full bg-gradient-to-r from-green-600 to-green-500 mr-2" />
-                        Verde (Default)
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => changeColorTheme("blue")}>
-                        <div className="h-4 w-4 rounded-full bg-gradient-to-r from-blue-600 to-blue-500 mr-2" />
-                        Azul
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => changeColorTheme("purple")}>
-                        <div className="h-4 w-4 rounded-full bg-gradient-to-r from-purple-600 to-purple-500 mr-2" />
-                        Púrpura
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => changeColorTheme("amber")}>
-                        <div className="h-4 w-4 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 mr-2" />
-                        Ámbar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => changeColorTheme("rose")}>
-                        <div className="h-4 w-4 rounded-full bg-gradient-to-r from-rose-600 to-rose-500 mr-2" />
-                        Rosa
-                      </DropdownMenuItem>
-                    </DropdownMenuSubContent>
-                  </DropdownMenuPortal>
-                </DropdownMenuSub>
-
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    {theme === "dark" ? (
-                      <Moon className="h-4 w-4 mr-2" />
-                    ) : theme === "light" ? (
-                      <Sun className="h-4 w-4 mr-2" />
-                    ) : (
-                      <Laptop className="h-4 w-4 mr-2" />
-                    )}
-                    <span>Modo de Visualización</span>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuSubContent>
-                      <DropdownMenuItem onClick={() => setTheme("light")}>
-                        <Sun className="h-4 w-4 mr-2" />
-                        Claro
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setTheme("dark")}>
-                        <Moon className="h-4 w-4 mr-2" />
-                        Oscuro
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setTheme("system")}>
-                        <Laptop className="h-4 w-4 mr-2" />
-                        Sistema
-                      </DropdownMenuItem>
-                    </DropdownMenuSubContent>
-                  </DropdownMenuPortal>
-                </DropdownMenuSub>
-
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <HelpCircle className="h-4 w-4 mr-2" />
-                  Ayuda y Soporte
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className={cn(
-                    "flex items-center gap-2 p-1 rounded-full",
-                    theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
-                  )}
-                >
-                  <div
+            <div className="flex items-center gap-1 md:gap-2">
+              {/* Search button/bar */}
+              <AnimatePresence>
+                {searchOpen ? (
+                  <motion.div
+                    initial={{ width: 40, opacity: 0 }}
+                    animate={{ width: 200, opacity: 1 }}
+                    exit={{ width: 40, opacity: 0 }}
+                    className="relative"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Buscar vehículo..."
+                      className={cn(
+                        "w-full h-9 px-3 py-2 text-sm rounded-full border focus:ring-2 focus:ring-offset-2",
+                        theme === "dark"
+                          ? `bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:ring-${colorTheme}-500 focus:ring-offset-gray-900`
+                          : `bg-white border-gray-200 focus:ring-${colorTheme}-500 focus:ring-offset-white`,
+                      )}
+                      autoFocus
+                    />
+                    <button
+                      className={cn(
+                        "absolute right-2 top-1/2 transform -translate-y-1/2",
+                        theme === "dark" ? "text-gray-400" : "text-gray-500",
+                      )}
+                      onClick={() => setSearchOpen(false)}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                     className={cn(
-                      "h-8 w-8 rounded-full flex items-center justify-center text-white font-medium",
-                      `bg-gradient-to-r ${themeColors.bgGradient}`,
+                      "p-2 rounded-full transition-colors duration-200",
+                      theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
+                    )}
+                    onClick={() => setSearchOpen(true)}
+                  >
+                    <Search className="h-5 w-5" />
+                  </motion.button>
+                )}
+              </AnimatePresence>
+
+              {/* Notifications */}
+              <div className="relative">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={cn(
+                    "p-2 rounded-full transition-colors duration-200",
+                    theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
+                  )}
+                >
+                  <Bell className="h-5 w-5" />
+                  {notifications > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className={`absolute -top-1 -right-1 bg-gradient-to-r ${themeColors.bgGradient} text-white text-xs rounded-full h-5 w-5 flex items-center justify-center shadow-lg`}
+                    >
+                      {notifications}
+                    </motion.span>
+                  )}
+                </motion.button>
+              </div>
+
+              {/* Theme Selector */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={cn(
+                      "p-2 rounded-full hidden md:flex transition-colors duration-200",
+                      theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
                     )}
                   >
-                    {user ? user.charAt(0).toUpperCase() : "U"}
-                  </div>
-                  <ChevronDown className="h-4 w-4 hidden md:block" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="h-4 w-4 mr-2" />
-                  Perfil
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Configuración
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Cerrar Sesión
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    <Settings className="h-5 w-5" />
+                  </motion.button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56 backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800"
+                >
+                  <DropdownMenuLabel className="flex items-center gap-2">
+                    <Sparkles className={`h-4 w-4 ${themeColors.textColor}`} />
+                    <span>Personalización</span>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
 
-            {/* Mobile Menu Button */}
-            <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden">
-              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className="flex items-center gap-2">
+                      <Palette className="h-4 w-4 mr-2" />
+                      <span>Color del Tema</span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                      <DropdownMenuSubContent className="backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800">
+                        <DropdownMenuItem onClick={() => changeColorTheme("green")} className="flex items-center gap-2">
+                          <div className="h-4 w-4 rounded-full bg-gradient-to-r from-green-600 to-green-500" />
+                          <span>Verde (Default)</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => changeColorTheme("blue")} className="flex items-center gap-2">
+                          <div className="h-4 w-4 rounded-full bg-gradient-to-r from-blue-600 to-blue-500" />
+                          <span>Azul</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => changeColorTheme("purple")}
+                          className="flex items-center gap-2"
+                        >
+                          <div className="h-4 w-4 rounded-full bg-gradient-to-r from-purple-600 to-purple-500" />
+                          <span>Púrpura</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => changeColorTheme("amber")} className="flex items-center gap-2">
+                          <div className="h-4 w-4 rounded-full bg-gradient-to-r from-amber-600 to-amber-500" />
+                          <span>Ámbar</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => changeColorTheme("rose")} className="flex items-center gap-2">
+                          <div className="h-4 w-4 rounded-full bg-gradient-to-r from-rose-600 to-rose-500" />
+                          <span>Rosa</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuSub>
+
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className="flex items-center gap-2">
+                      {theme === "dark" ? (
+                        <Moon className="h-4 w-4 mr-2" />
+                      ) : theme === "light" ? (
+                        <Sun className="h-4 w-4 mr-2" />
+                      ) : (
+                        <Laptop className="h-4 w-4 mr-2" />
+                      )}
+                      <span>Modo de Visualización</span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                      <DropdownMenuSubContent className="backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800">
+                        <DropdownMenuItem onClick={() => setTheme("light")} className="flex items-center gap-2">
+                          <Sun className="h-4 w-4 mr-2 text-amber-500" />
+                          <span>Claro</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme("dark")} className="flex items-center gap-2">
+                          <Moon className="h-4 w-4 mr-2 text-blue-500" />
+                          <span>Oscuro</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme("system")} className="flex items-center gap-2">
+                          <Laptop className="h-4 w-4 mr-2 text-gray-500" />
+                          <span>Sistema</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuSub>
+
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="flex items-center gap-2">
+                    <HelpCircle className="h-4 w-4 mr-2" />
+                    <span>Ayuda y Soporte</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={cn(
+                      "flex items-center gap-2 p-1 rounded-full transition-colors duration-200",
+                      theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "h-8 w-8 rounded-full flex items-center justify-center text-white font-medium shadow-md",
+                        `bg-gradient-to-r ${themeColors.bgGradient}`,
+                      )}
+                    >
+                      {user ? user.charAt(0).toUpperCase() : "U"}
+                    </div>
+                    <ChevronDown className="h-4 w-4 hidden md:block" />
+                  </motion.button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56 backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800"
+                >
+                  <div className="p-2">
+                    <div className={`p-3 rounded-lg bg-gradient-to-r ${themeColors.bgGradient} text-white`}>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                          <User className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{user || "Usuario"}</p>
+                          <p className="text-xs text-white/80">Administrador</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="flex items-center gap-2">
+                    <User className="h-4 w-4 mr-2" />
+                    <span>Mi Perfil</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="flex items-center gap-2">
+                    <Settings className="h-4 w-4 mr-2" />
+                    <span>Configuración</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-red-600 dark:text-red-400 focus:text-red-700 dark:focus:text-red-300"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    <span>Cerrar Sesión</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Mobile Menu Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                variant="ghost"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className={cn(
+                  "p-2 rounded-full md:hidden transition-colors duration-200",
+                  theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
+                )}
+              >
+                {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </motion.button>
+            </div>
           </div>
         </div>
 
         {/* Navigation Bar */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
           className={cn(
-            "hidden md:block border-t",
-            theme === "dark" ? "bg-gray-900 border-gray-800" : "bg-gray-50 border-gray-100",
+            "hidden md:block border-t border-b",
+            theme === "dark" ? "bg-gray-900/50 border-gray-800" : "bg-gray-50/50 border-gray-100",
           )}
         >
           <div className="container mx-auto px-4">
             <nav className="flex items-center gap-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    "px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 transition-colors",
-                    isLinkActive(item.href)
-                      ? `bg-${colorTheme}-100 text-${colorTheme}-700 dark:bg-${colorTheme}-900/20 dark:text-${colorTheme}-300`
-                      : theme === "dark"
-                        ? "text-gray-300 hover:bg-gray-800 hover:text-white"
-                        : `text-gray-700 ${themeColors.hoverBg} ${themeColors.hoverText}`,
-                  )}
-                >
-                  {item.icon}
-                  {item.name}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const isActive = typeof window !== "undefined" && isLinkActive(item.href)
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "px-4 py-2.5 rounded-md text-sm font-medium flex items-center gap-1.5 transition-all duration-200",
+                      isActive
+                        ? `${themeColors.activeNavBg} ${themeColors.activeNavText}`
+                        : theme === "dark"
+                          ? "text-gray-300 hover:bg-gray-800 hover:text-white"
+                          : `text-gray-700 ${themeColors.hoverBg} ${themeColors.hoverText}`,
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "p-1 rounded",
+                        isActive
+                          ? `bg-gradient-to-r ${themeColors.bgGradient} text-white`
+                          : "bg-gray-200 dark:bg-gray-700",
+                      )}
+                    >
+                      {item.icon}
+                    </div>
+                    {item.name}
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeIndicator"
+                        className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${themeColors.bgGradient}`}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      />
+                    )}
+                  </Link>
+                )
+              })}
             </nav>
           </div>
-        </div>
+        </motion.div>
       </motion.header>
 
       {/* Mobile menu */}
@@ -480,31 +594,60 @@ export default function EnhancedHeaderV2() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className={cn("md:hidden overflow-hidden z-40", theme === "dark" ? "bg-gray-900" : "bg-white")}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className={cn(
+              "md:hidden overflow-hidden z-40 border-b shadow-lg",
+              theme === "dark"
+                ? "bg-gray-900/95 backdrop-blur-md border-gray-800"
+                : "bg-white/95 backdrop-blur-md border-gray-100",
+            )}
           >
             <div className="px-4 py-4 flex flex-col gap-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg",
-                    isLinkActive(item.href)
-                      ? `bg-${colorTheme}-50 text-${colorTheme}-700 dark:bg-${colorTheme}-900/30 dark:text-${colorTheme}-300`
-                      : theme === "dark"
-                        ? "text-gray-300 hover:bg-gray-800 hover:text-white"
-                        : `text-gray-700 ${themeColors.hoverBg} ${themeColors.hoverText}`,
-                  )}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <div className={cn("p-2 rounded-md", theme === "dark" ? "bg-gray-800" : themeColors.iconBg)}>
-                    {item.icon}
-                  </div>
-                  {item.name}
-                </Link>
-              ))}
+              {navItems.map((item, index) => {
+                const isActive = typeof window !== "undefined" && isLinkActive(item.href)
+                return (
+                  <motion.div
+                    key={item.name}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-3 rounded-xl",
+                        isActive
+                          ? `bg-gradient-to-r ${themeColors.bgGradient} text-white`
+                          : theme === "dark"
+                            ? "text-gray-300 hover:bg-gray-800 hover:text-white"
+                            : `text-gray-700 ${themeColors.hoverBg} ${themeColors.hoverText}`,
+                      )}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <div
+                        className={cn(
+                          "p-2 rounded-lg",
+                          isActive ? "bg-white/20" : theme === "dark" ? "bg-gray-800" : themeColors.iconBg,
+                        )}
+                      >
+                        {item.icon}
+                      </div>
+                      <div className="flex-1">
+                        <span className="font-medium">{item.name}</span>
+                        {isActive && <p className="text-xs text-white/80">Sección actual</p>}
+                      </div>
+                      {isActive && <Zap className="h-4 w-4" />}
+                    </Link>
+                  </motion.div>
+                )
+              })}
 
-              <div className={cn("mt-2 pt-2 border-t", theme === "dark" ? "border-gray-800" : "border-gray-200")}>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className={cn("mt-4 pt-4 border-t", theme === "dark" ? "border-gray-800" : "border-gray-200")}
+              >
                 <div className="flex justify-between items-center px-3 py-2">
                   <span className={theme === "dark" ? "text-gray-400" : "text-gray-500"}>Tema del Header</span>
                   <div className="flex gap-2">
@@ -568,16 +711,21 @@ export default function EnhancedHeaderV2() {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-2 border-t border-gray-200 dark:border-gray-800">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="mt-4 pt-2 border-t border-gray-200 dark:border-gray-800"
+                >
                   <Button
                     onClick={handleLogout}
-                    className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white"
+                    className={`w-full bg-gradient-to-r ${themeColors.bgGradient} hover:opacity-90 text-white rounded-xl py-3`}
                   >
                     <LogOut className="h-4 w-4 mr-2" />
                     Cerrar Sesión
                   </Button>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             </div>
           </motion.div>
         )}
@@ -585,4 +733,3 @@ export default function EnhancedHeaderV2() {
     </>
   )
 }
-

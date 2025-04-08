@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { useAuth } from "../../hooks/use-auth"
+import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Eye, EyeOff, Lock, User, AlertCircle, Loader2 } from "lucide-react"
@@ -152,4 +152,3 @@ export default function LoginForm() {
     </motion.div>
   )
 }
-
