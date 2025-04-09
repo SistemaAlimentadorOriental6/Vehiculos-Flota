@@ -33,10 +33,10 @@ export default function CapturaPage() {
   const [transitionData, setTransitionData] = useState<{ from: number; to: number } | null>(null)
   const [editMode, setEditMode] = useState(false)
   const [showCongratulations, setShowCongratulations] = useState(false)
-
-  // Estado para la entrada del vehículo
-  const [vehicleId, setVehicleId] = useState(vehicleIdFromUrl || "")
   const [showVehicleInput, setShowVehicleInput] = useState(!vehicleIdFromUrl)
+  const [vehicleId, setVehicleId] = useState(vehicleIdFromUrl || "");
+  const [formattedVehicleId, setFormattedVehicleId] = useState("");
+  
 
   const { toast } = useToast()
   const { notifications, addNotification, removeNotification } = useNotifications()
@@ -55,24 +55,73 @@ export default function CapturaPage() {
     }
   }, [vehicleId, showVehicleInput, router])
 
-  // Manejar el envío del formulario de vehículo
+  // Añadir función para formatear el ID del vehículo (añadir ceros a la izquierda)
+  const formatVehicleId = (id: string): string => {
+    // Eliminar caracteres no numéricos
+    const numericId = id.replace(/\D/g, "")
+
+    if (!numericId) return ""
+
+    // Convertir a número y verificar el rango
+    const numId = Number.parseInt(numericId, 10)
+
+    // Formatear con ceros a la izquierda
+    return numId.toString().padStart(3, "0")
+  }
+
+  // Actualizar el manejador de cambio de input
+  const handleVehicleIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+
+    // Permitir solo números
+    const numericValue = value.replace(/\D/g, "")
+
+    // Actualizar el estado con el valor sin formato
+    setVehicleId(numericValue)
+
+    // Actualizar el estado formateado
+    if (numericValue) {
+      setFormattedVehicleId(formatVehicleId(numericValue))
+    } else {
+      setFormattedVehicleId("")
+    }
+  }
+
+  // Actualizar el manejador de envío del formulario
   const handleVehicleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (vehicleId.trim().length > 0) {
-      setShowVehicleInput(false)
-      addNotification({
-        title: "Vehículo registrado",
-        message: `Iniciando captura para el vehículo #${vehicleId}`,
-        type: "success",
-      })
-    } else {
+    if (!vehicleId.trim()) {
       toast({
         title: "Error de validación",
         description: "Por favor ingrese un número de vehículo",
         variant: "destructive",
       })
+      return
     }
+
+    // Convertir a número para validar el rango
+    const numId = Number.parseInt(vehicleId, 10)
+
+    if (isNaN(numId) || numId < 1 || numId > 260) {
+      toast({
+        title: "Error de validación",
+        description: "El número de vehículo debe estar entre 1 y 260",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Usar el ID formateado para la aplicación
+    const finalVehicleId = formatVehicleId(vehicleId)
+    setVehicleId(finalVehicleId)
+
+    setShowVehicleInput(false)
+    addNotification({
+      title: "Vehículo registrado",
+      message: `Iniciando captura para el vehículo #${finalVehicleId}`,
+      type: "success",
+    })
   }
 
   // Handle photo capture from camera
@@ -198,21 +247,45 @@ export default function CapturaPage() {
                 exit={{ opacity: 0, y: -20 }}
                 className="flex-1 flex flex-col items-center justify-center"
               >
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md">
-                  <h2 className="text-xl font-bold mb-6 text-center">Ingrese el número del vehículo</h2>
-                  <form onSubmit={handleVehicleSubmit} className="space-y-6">
-                    <div>
-                      <Input
-                        type="text"
-                        placeholder="Ej: ABC123"
-                        value={vehicleId}
-                        onChange={(e) => setVehicleId(e.target.value.toUpperCase())}
-                        className="text-center text-xl font-bold tracking-wider"
-                      />
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 w-full max-w-md border border-gray-100 dark:border-gray-700">
+                  <div className="text-center mb-6">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 mb-4">
+                      <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
                     </div>
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Número de Vehículo</h2>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">Ingrese un número entre 1 y 260</p>
+                  </div>
+
+                  <form onSubmit={handleVehicleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          placeholder="000"
+                          value={vehicleId}
+                          onChange={handleVehicleIdChange}
+                          className="text-center text-3xl font-bold tracking-wider h-16 bg-gray-50 dark:bg-gray-900 border-2 focus:border-green-500 dark:focus:border-green-600"
+                          maxLength={3}
+                        />
+                        {formattedVehicleId && (
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 text-xs font-medium px-2 py-1 rounded-full">
+                            #{formattedVehicleId}
+                          </div>
+                        )}
+                      </div>
+                      {formattedVehicleId && (
+                        <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+                          Vehículo formateado:{" "}
+                          <span className="font-medium text-green-600 dark:text-green-400">#{formattedVehicleId}</span>
+                        </p>
+                      )}
+                    </div>
+
                     <Button
                       type="submit"
-                      className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white"
+                      className="w-full py-6 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white rounded-xl shadow-md hover:shadow-lg transition-all"
                     >
                       Iniciar Captura
                     </Button>

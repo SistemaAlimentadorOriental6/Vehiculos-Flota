@@ -25,13 +25,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Cargar estado de autenticación desde localStorage al iniciar
   useEffect(() => {
     const storedUser = localStorage.getItem("sao6_user")
     const storedAuthTime = localStorage.getItem("sao6_auth_time")
 
     if (storedUser && storedAuthTime) {
-      // Verificar si la sesión ha expirado (8 horas)
       const authTime = Number.parseInt(storedAuthTime, 10)
       const currentTime = new Date().getTime()
       const sessionDuration = 8 * 60 * 60 * 1000 // 8 horas en milisegundos
@@ -40,7 +38,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(storedUser)
         setIsAuthenticated(true)
       } else {
-        // Sesión expirada, limpiar localStorage
         localStorage.removeItem("sao6_user")
         localStorage.removeItem("sao6_auth_time")
       }
@@ -53,7 +50,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(username)
     setIsAuthenticated(true)
 
-    // Guardar en localStorage
     localStorage.setItem("sao6_user", username)
     localStorage.setItem("sao6_auth_time", new Date().getTime().toString())
   }
@@ -62,12 +58,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null)
     setIsAuthenticated(false)
 
-    // Limpiar localStorage
     localStorage.removeItem("sao6_user")
     localStorage.removeItem("sao6_auth_time")
   }
 
-  // No renderizar nada hasta que se haya verificado la autenticación
   if (isLoading) {
     return null
   }

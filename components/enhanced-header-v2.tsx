@@ -22,6 +22,7 @@ import {
   LayoutDashboard,
   Zap,
   Sparkles,
+  Check,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -37,23 +38,47 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
   DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu"
 import { useTheme } from "next-themes"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter, usePathname } from "next/navigation"
 import Cookies from "js-cookie"
 
-export default function EnhancedHeaderV2() {
+// Definición de tipos para los temas de color
+type ColorTheme = "green" | "blue" | "purple" | "amber" | "rose"
+
+// Definición de tipos para los colores del tema
+interface ThemeColors {
+  bgGradient: string
+  lightGradient: string
+  textColor: string
+  hoverBg: string
+  hoverText: string
+  iconBg: string
+  iconColor: string
+  darkBg: string
+  darkText: string
+  darkHoverBg: string
+  activeNavBg: string
+  activeNavText: string
+  ringColor: string
+}
+
+export default function EnhancedHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const [notifications, setNotifications] = useState(0)
   const [searchOpen, setSearchOpen] = useState(false)
-  const [colorTheme, setColorTheme] = useState<"green" | "blue" | "purple" | "amber" | "rose">("green")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [colorTheme, setColorTheme] = useState<ColorTheme>("green")
   const { theme, setTheme } = useTheme()
   const { user, logout } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
   const headerRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   // Scroll effects
   const { scrollY } = useScroll()
@@ -65,13 +90,7 @@ export default function EnhancedHeaderV2() {
     setIsMounted(true)
 
     // Cargar tema guardado
-    const savedColorTheme = localStorage.getItem("header-color-theme") as
-      | "green"
-      | "blue"
-      | "purple"
-      | "amber"
-      | "rose"
-      | null
+    const savedColorTheme = localStorage.getItem("header-color-theme") as ColorTheme | null
     if (savedColorTheme) {
       setColorTheme(savedColorTheme)
     }
@@ -101,21 +120,53 @@ export default function EnhancedHeaderV2() {
     return () => clearInterval(interval)
   }, [])
 
+  // Focus en el input de búsqueda cuando se abre
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus()
+    }
+  }, [searchOpen])
+
+  // Cerrar el menú móvil al cambiar de ruta
+  useEffect(() => {
+    setIsMenuOpen(false)
+  }, [pathname])
+
+  // Manejar teclas para la búsqueda
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + K para abrir búsqueda
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault()
+        setSearchOpen((prev) => !prev)
+      }
+
+      // Escape para cerrar búsqueda
+      if (e.key === "Escape" && searchOpen) {
+        setSearchOpen(false)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [searchOpen])
+
   const handleLogout = () => {
     logout()
     router.push("/login")
   }
 
-  const changeColorTheme = (newTheme: "green" | "blue" | "purple" | "amber" | "rose") => {
+  const changeColorTheme = (newTheme: ColorTheme) => {
     setColorTheme(newTheme)
     localStorage.setItem("header-color-theme", newTheme)
   }
 
-  const getThemeColors = () => {
+  const getThemeColors = (): ThemeColors => {
     switch (colorTheme) {
       case "blue":
         return {
           bgGradient: "from-blue-600 to-blue-500",
+          lightGradient: "from-blue-400 to-blue-300",
           textColor: "text-blue-500",
           hoverBg: "hover:bg-blue-50",
           hoverText: "hover:text-blue-800",
@@ -126,10 +177,12 @@ export default function EnhancedHeaderV2() {
           darkHoverBg: "dark:hover:bg-blue-900",
           activeNavBg: "bg-blue-100 dark:bg-blue-900/30",
           activeNavText: "text-blue-700 dark:text-blue-300",
+          ringColor: "ring-blue-500",
         }
       case "purple":
         return {
           bgGradient: "from-purple-600 to-purple-500",
+          lightGradient: "from-purple-400 to-purple-300",
           textColor: "text-purple-500",
           hoverBg: "hover:bg-purple-50",
           hoverText: "hover:text-purple-800",
@@ -140,10 +193,12 @@ export default function EnhancedHeaderV2() {
           darkHoverBg: "dark:hover:bg-purple-900",
           activeNavBg: "bg-purple-100 dark:bg-purple-900/30",
           activeNavText: "text-purple-700 dark:text-purple-300",
+          ringColor: "ring-purple-500",
         }
       case "amber":
         return {
           bgGradient: "from-amber-600 to-amber-500",
+          lightGradient: "from-amber-400 to-amber-300",
           textColor: "text-amber-500",
           hoverBg: "hover:bg-amber-50",
           hoverText: "hover:text-amber-800",
@@ -154,10 +209,12 @@ export default function EnhancedHeaderV2() {
           darkHoverBg: "dark:hover:bg-amber-900",
           activeNavBg: "bg-amber-100 dark:bg-amber-900/30",
           activeNavText: "text-amber-700 dark:text-amber-300",
+          ringColor: "ring-amber-500",
         }
       case "rose":
         return {
           bgGradient: "from-rose-600 to-rose-500",
+          lightGradient: "from-rose-400 to-rose-300",
           textColor: "text-rose-500",
           hoverBg: "hover:bg-rose-50",
           hoverText: "hover:text-rose-800",
@@ -168,10 +225,12 @@ export default function EnhancedHeaderV2() {
           darkHoverBg: "dark:hover:bg-rose-900",
           activeNavBg: "bg-rose-100 dark:bg-rose-900/30",
           activeNavText: "text-rose-700 dark:text-rose-300",
+          ringColor: "ring-rose-500",
         }
       default:
         return {
           bgGradient: "from-green-600 to-green-500",
+          lightGradient: "from-green-400 to-green-300",
           textColor: "text-green-500",
           hoverBg: "hover:bg-green-50",
           hoverText: "hover:text-green-800",
@@ -182,6 +241,7 @@ export default function EnhancedHeaderV2() {
           darkHoverBg: "dark:hover:bg-green-900",
           activeNavBg: "bg-green-100 dark:bg-green-900/30",
           activeNavText: "text-green-700 dark:text-green-300",
+          ringColor: "ring-green-500",
         }
     }
   }
@@ -189,6 +249,7 @@ export default function EnhancedHeaderV2() {
   const themeColors = getThemeColors()
   const title = "SAO6 - Flota Vehículos"
 
+  // Animaciones para el título
   const letterVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: (i: number) => ({
@@ -228,6 +289,15 @@ export default function EnhancedHeaderV2() {
     return false
   }
 
+  // Opciones de color para el tema
+  const colorOptions: { value: ColorTheme; label: string; gradient: string }[] = [
+    { value: "green", label: "Verde", gradient: "from-green-600 to-green-500" },
+    { value: "blue", label: "Azul", gradient: "from-blue-600 to-blue-500" },
+    { value: "purple", label: "Púrpura", gradient: "from-purple-600 to-purple-500" },
+    { value: "amber", label: "Ámbar", gradient: "from-amber-600 to-amber-500" },
+    { value: "rose", label: "Rosa", gradient: "from-rose-600 to-rose-500" },
+  ]
+
   return (
     <>
       <motion.header
@@ -260,10 +330,17 @@ export default function EnhancedHeaderV2() {
                 >
                   <Camera className="h-6 w-6 text-white relative z-10" />
                   <motion.div
-                    className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    className="absolute inset-0 bg-white/20"
                     initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 0 }}
-                    transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+                    animate={{
+                      scale: [1, 1.5, 1],
+                      opacity: [0, 0.5, 0],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Number.POSITIVE_INFINITY,
+                      repeatType: "loop",
+                    }}
                   />
                 </motion.div>
                 <div className="hidden sm:block">
@@ -281,11 +358,17 @@ export default function EnhancedHeaderV2() {
                       </motion.span>
                     ))}
                   </h1>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: "100%" }}
+                    transition={{ delay: 0.8, duration: 0.5 }}
+                    className={cn("h-0.5 rounded-full bg-gradient-to-r", themeColors.lightGradient, "dark:opacity-50")}
+                  />
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5, duration: 0.3 }}
-                    className={cn("text-xs", themeColors.textColor, themeColors.darkText)}
+                    className={cn("text-xs mt-0.5", themeColors.textColor, themeColors.darkText)}
                   >
                     Sistema profesional de documentación
                   </motion.p>
@@ -295,47 +378,67 @@ export default function EnhancedHeaderV2() {
 
             <div className="flex items-center gap-1 md:gap-2">
               {/* Search button/bar */}
-              <AnimatePresence>
+              <AnimatePresence mode="wait">
                 {searchOpen ? (
                   <motion.div
+                    key="search-input"
                     initial={{ width: 40, opacity: 0 }}
-                    animate={{ width: 200, opacity: 1 }}
+                    animate={{ width: 240, opacity: 1 }}
                     exit={{ width: 40, opacity: 0 }}
                     className="relative"
                   >
                     <input
+                      ref={searchInputRef}
                       type="text"
-                      placeholder="Buscar vehículo..."
+                      placeholder="Buscar vehículo... (Esc para cerrar)"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       className={cn(
-                        "w-full h-9 px-3 py-2 text-sm rounded-full border focus:ring-2 focus:ring-offset-2",
+                        "w-full h-9 px-3 py-2 text-sm rounded-full border focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all",
                         theme === "dark"
                           ? `bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:ring-${colorTheme}-500 focus:ring-offset-gray-900`
                           : `bg-white border-gray-200 focus:ring-${colorTheme}-500 focus:ring-offset-white`,
                       )}
-                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") {
+                          setSearchOpen(false)
+                          setSearchQuery("")
+                        }
+                      }}
                     />
                     <button
                       className={cn(
                         "absolute right-2 top-1/2 transform -translate-y-1/2",
                         theme === "dark" ? "text-gray-400" : "text-gray-500",
                       )}
-                      onClick={() => setSearchOpen(false)}
+                      onClick={() => {
+                        setSearchOpen(false)
+                        setSearchQuery("")
+                      }}
                     >
                       <X className="h-4 w-4" />
                     </button>
                   </motion.div>
                 ) : (
                   <motion.button
+                    key="search-button"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className={cn(
-                      "p-2 rounded-full transition-colors duration-200",
+                      "p-2 rounded-full transition-colors duration-200 relative group",
                       theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
                     )}
                     onClick={() => setSearchOpen(true)}
                   >
                     <Search className="h-5 w-5" />
+                    <motion.span
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      whileHover={{ opacity: 1, scale: 1 }}
+                      className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs py-1 px-2 rounded whitespace-nowrap"
+                    >
+                      Buscar (Ctrl+K)
+                    </motion.span>
                   </motion.button>
                 )}
               </AnimatePresence>
@@ -351,15 +454,18 @@ export default function EnhancedHeaderV2() {
                   )}
                 >
                   <Bell className="h-5 w-5" />
-                  {notifications > 0 && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className={`absolute -top-1 -right-1 bg-gradient-to-r ${themeColors.bgGradient} text-white text-xs rounded-full h-5 w-5 flex items-center justify-center shadow-lg`}
-                    >
-                      {notifications}
-                    </motion.span>
-                  )}
+                  <AnimatePresence>
+                    {notifications > 0 && (
+                      <motion.span
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        className={`absolute -top-1 -right-1 bg-gradient-to-r ${themeColors.bgGradient} text-white text-xs rounded-full h-5 w-5 flex items-center justify-center shadow-lg`}
+                      >
+                        {notifications}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </motion.button>
               </div>
 
@@ -370,11 +476,21 @@ export default function EnhancedHeaderV2() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className={cn(
-                      "p-2 rounded-full hidden md:flex transition-colors duration-200",
+                      "p-2 rounded-full hidden md:flex transition-colors duration-200 relative",
                       theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
                     )}
                   >
                     <Settings className="h-5 w-5" />
+                    <motion.div
+                      className={cn(
+                        "absolute inset-0 rounded-full border-2 border-dashed",
+                        themeColors.textColor,
+                        themeColors.darkText,
+                      )}
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                      style={{ opacity: 0.3 }}
+                    />
                   </motion.button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -391,32 +507,26 @@ export default function EnhancedHeaderV2() {
                     <DropdownMenuSubTrigger className="flex items-center gap-2">
                       <Palette className="h-4 w-4 mr-2" />
                       <span>Color del Tema</span>
+                      <div className={`ml-auto h-3 w-3 rounded-full bg-gradient-to-r ${themeColors.bgGradient}`} />
                     </DropdownMenuSubTrigger>
                     <DropdownMenuPortal>
                       <DropdownMenuSubContent className="backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800">
-                        <DropdownMenuItem onClick={() => changeColorTheme("green")} className="flex items-center gap-2">
-                          <div className="h-4 w-4 rounded-full bg-gradient-to-r from-green-600 to-green-500" />
-                          <span>Verde (Default)</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => changeColorTheme("blue")} className="flex items-center gap-2">
-                          <div className="h-4 w-4 rounded-full bg-gradient-to-r from-blue-600 to-blue-500" />
-                          <span>Azul</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => changeColorTheme("purple")}
-                          className="flex items-center gap-2"
+                        <DropdownMenuRadioGroup
+                          value={colorTheme}
+                          onValueChange={(value) => changeColorTheme(value as ColorTheme)}
                         >
-                          <div className="h-4 w-4 rounded-full bg-gradient-to-r from-purple-600 to-purple-500" />
-                          <span>Púrpura</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => changeColorTheme("amber")} className="flex items-center gap-2">
-                          <div className="h-4 w-4 rounded-full bg-gradient-to-r from-amber-600 to-amber-500" />
-                          <span>Ámbar</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => changeColorTheme("rose")} className="flex items-center gap-2">
-                          <div className="h-4 w-4 rounded-full bg-gradient-to-r from-rose-600 to-rose-500" />
-                          <span>Rosa</span>
-                        </DropdownMenuItem>
+                          {colorOptions.map((option) => (
+                            <DropdownMenuRadioItem
+                              key={option.value}
+                              value={option.value}
+                              className="flex items-center gap-2"
+                            >
+                              <div className={`h-4 w-4 rounded-full bg-gradient-to-r ${option.gradient}`} />
+                              <span>{option.label}</span>
+                              {colorTheme === option.value && <Check className="h-4 w-4 ml-auto" />}
+                            </DropdownMenuRadioItem>
+                          ))}
+                        </DropdownMenuRadioGroup>
                       </DropdownMenuSubContent>
                     </DropdownMenuPortal>
                   </DropdownMenuSub>
@@ -434,18 +544,23 @@ export default function EnhancedHeaderV2() {
                     </DropdownMenuSubTrigger>
                     <DropdownMenuPortal>
                       <DropdownMenuSubContent className="backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800">
-                        <DropdownMenuItem onClick={() => setTheme("light")} className="flex items-center gap-2">
-                          <Sun className="h-4 w-4 mr-2 text-amber-500" />
-                          <span>Claro</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTheme("dark")} className="flex items-center gap-2">
-                          <Moon className="h-4 w-4 mr-2 text-blue-500" />
-                          <span>Oscuro</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTheme("system")} className="flex items-center gap-2">
-                          <Laptop className="h-4 w-4 mr-2 text-gray-500" />
-                          <span>Sistema</span>
-                        </DropdownMenuItem>
+                        <DropdownMenuRadioGroup value={theme || "system"} onValueChange={setTheme}>
+                          <DropdownMenuRadioItem value="light" className="flex items-center gap-2">
+                            <Sun className="h-4 w-4 mr-2 text-amber-500" />
+                            <span>Claro</span>
+                            {theme === "light" && <Check className="h-4 w-4 ml-auto" />}
+                          </DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="dark" className="flex items-center gap-2">
+                            <Moon className="h-4 w-4 mr-2 text-blue-500" />
+                            <span>Oscuro</span>
+                            {theme === "dark" && <Check className="h-4 w-4 ml-auto" />}
+                          </DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="system" className="flex items-center gap-2">
+                            <Laptop className="h-4 w-4 mr-2 text-gray-500" />
+                            <span>Sistema</span>
+                            {theme === "system" && <Check className="h-4 w-4 ml-auto" />}
+                          </DropdownMenuRadioItem>
+                        </DropdownMenuRadioGroup>
                       </DropdownMenuSubContent>
                     </DropdownMenuPortal>
                   </DropdownMenuSub>
@@ -471,11 +586,26 @@ export default function EnhancedHeaderV2() {
                   >
                     <div
                       className={cn(
-                        "h-8 w-8 rounded-full flex items-center justify-center text-white font-medium shadow-md",
+                        "h-8 w-8 rounded-full flex items-center justify-center text-white font-medium shadow-md relative overflow-hidden",
                         `bg-gradient-to-r ${themeColors.bgGradient}`,
                       )}
                     >
-                      {user ? user.charAt(0).toUpperCase() : "U"}
+                      <span className="relative z-10">{user ? user.charAt(0).toUpperCase() : "U"}</span>
+                      <motion.div
+                        className="absolute inset-0 bg-white/10"
+                        animate={{
+                          rotate: [0, 360],
+                        }}
+                        transition={{
+                          duration: 8,
+                          repeat: Number.POSITIVE_INFINITY,
+                          repeatType: "loop",
+                          ease: "linear",
+                        }}
+                        style={{
+                          borderRadius: "40% 60% 70% 30% / 40% 50% 60% 50%",
+                        }}
+                      />
                     </div>
                     <ChevronDown className="h-4 w-4 hidden md:block" />
                   </motion.button>
@@ -485,8 +615,25 @@ export default function EnhancedHeaderV2() {
                   className="w-56 backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800"
                 >
                   <div className="p-2">
-                    <div className={`p-3 rounded-lg bg-gradient-to-r ${themeColors.bgGradient} text-white`}>
-                      <div className="flex items-center gap-3">
+                    <div
+                      className={`p-3 rounded-lg bg-gradient-to-r ${themeColors.bgGradient} text-white relative overflow-hidden`}
+                    >
+                      <motion.div
+                        className="absolute inset-0 bg-white/5"
+                        animate={{
+                          x: [0, 100],
+                          opacity: [0, 0.5, 0],
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Number.POSITIVE_INFINITY,
+                          repeatType: "loop",
+                        }}
+                        style={{
+                          skewX: -20,
+                        }}
+                      />
+                      <div className="flex items-center gap-3 relative z-10">
                         <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
                           <User className="h-5 w-5" />
                         </div>
@@ -521,14 +668,35 @@ export default function EnhancedHeaderV2() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                variant="ghost"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className={cn(
                   "p-2 rounded-full md:hidden transition-colors duration-200",
                   theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
                 )}
               >
-                {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                <AnimatePresence mode="wait">
+                  {isMenuOpen ? (
+                    <motion.div
+                      key="close"
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <X className="h-5 w-5" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="menu"
+                      initial={{ rotate: 90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: -90, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Menu className="h-5 w-5" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.button>
             </div>
           </div>
@@ -553,7 +721,7 @@ export default function EnhancedHeaderV2() {
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "px-4 py-2.5 rounded-md text-sm font-medium flex items-center gap-1.5 transition-all duration-200",
+                      "px-4 py-2.5 rounded-md text-sm font-medium flex items-center gap-1.5 transition-all duration-200 relative",
                       isActive
                         ? `${themeColors.activeNavBg} ${themeColors.activeNavText}`
                         : theme === "dark"
@@ -615,7 +783,7 @@ export default function EnhancedHeaderV2() {
                     <Link
                       href={item.href}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-3 rounded-xl",
+                        "flex items-center gap-3 px-3 py-3 rounded-xl relative overflow-hidden",
                         isActive
                           ? `bg-gradient-to-r ${themeColors.bgGradient} text-white`
                           : theme === "dark"
@@ -624,19 +792,35 @@ export default function EnhancedHeaderV2() {
                       )}
                       onClick={() => setIsMenuOpen(false)}
                     >
+                      {isActive && (
+                        <motion.div
+                          className="absolute inset-0 bg-white/10"
+                          initial={{ x: "-100%" }}
+                          animate={{ x: "100%" }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Number.POSITIVE_INFINITY,
+                            repeatType: "loop",
+                            ease: "linear",
+                          }}
+                          style={{
+                            skewX: -20,
+                          }}
+                        />
+                      )}
                       <div
                         className={cn(
-                          "p-2 rounded-lg",
+                          "p-2 rounded-lg relative z-10",
                           isActive ? "bg-white/20" : theme === "dark" ? "bg-gray-800" : themeColors.iconBg,
                         )}
                       >
                         {item.icon}
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 relative z-10">
                         <span className="font-medium">{item.name}</span>
                         {isActive && <p className="text-xs text-white/80">Sección actual</p>}
                       </div>
-                      {isActive && <Zap className="h-4 w-4" />}
+                      {isActive && <Zap className="h-4 w-4 relative z-10" />}
                     </Link>
                   </motion.div>
                 )
@@ -651,28 +835,46 @@ export default function EnhancedHeaderV2() {
                 <div className="flex justify-between items-center px-3 py-2">
                   <span className={theme === "dark" ? "text-gray-400" : "text-gray-500"}>Tema del Header</span>
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => changeColorTheme("green")}
-                      className="h-6 w-6 rounded-full bg-gradient-to-r from-green-600 to-green-500 border-2 border-white dark:border-gray-800"
-                      aria-label="Tema Verde"
-                    />
-                    <button
-                      onClick={() => changeColorTheme("blue")}
-                      className="h-6 w-6 rounded-full bg-gradient-to-r from-blue-600 to-blue-500 border-2 border-white dark:border-gray-800"
-                      aria-label="Tema Azul"
-                    />
-                    <button
-                      onClick={() => changeColorTheme("purple")}
-                      className="h-6 w-6 rounded-full bg-gradient-to-r from-purple-600 to-purple-500 border-2 border-white dark:border-gray-800"
-                      aria-label="Tema Púrpura"
-                    />
+                    {colorOptions.slice(0, 3).map((option) => (
+                      <motion.button
+                        key={option.value}
+                        onClick={() => changeColorTheme(option.value)}
+                        className={`h-6 w-6 rounded-full bg-gradient-to-r ${option.gradient} relative`}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        aria-label={`Tema ${option.label}`}
+                      >
+                        {colorTheme === option.value && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute inset-0 flex items-center justify-center"
+                          >
+                            <Check className="h-3 w-3 text-white" />
+                          </motion.div>
+                        )}
+                      </motion.button>
+                    ))}
+                    <motion.button
+                      onClick={() => {
+                        const currentIndex = colorOptions.findIndex((opt) => opt.value === colorTheme)
+                        const nextIndex = (currentIndex + 1) % colorOptions.length
+                        changeColorTheme(colorOptions[nextIndex].value)
+                      }}
+                      className="h-6 w-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"
+                      whileHover={{ rotate: 180 }}
+                      transition={{ duration: 0.3 }}
+                      aria-label="Cambiar tema"
+                    >
+                      <Palette className="h-3 w-3" />
+                    </motion.button>
                   </div>
                 </div>
 
                 <div className="flex justify-between items-center px-3 py-2">
                   <span className={theme === "dark" ? "text-gray-400" : "text-gray-500"}>Modo de Visualización</span>
                   <div className="flex gap-2">
-                    <button
+                    <motion.button
                       onClick={() => setTheme("light")}
                       className={cn(
                         "h-8 w-8 rounded-md flex items-center justify-center",
@@ -680,11 +882,13 @@ export default function EnhancedHeaderV2() {
                           ? "bg-amber-100 text-amber-600"
                           : "bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
                       )}
+                      whileHover={{ y: -2 }}
+                      whileTap={{ y: 0 }}
                       aria-label="Modo Claro"
                     >
                       <Sun className="h-4 w-4" />
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                       onClick={() => setTheme("dark")}
                       className={cn(
                         "h-8 w-8 rounded-md flex items-center justify-center",
@@ -692,11 +896,13 @@ export default function EnhancedHeaderV2() {
                           ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-900 dark:text-indigo-300"
                           : "bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
                       )}
+                      whileHover={{ y: -2 }}
+                      whileTap={{ y: 0 }}
                       aria-label="Modo Oscuro"
                     >
                       <Moon className="h-4 w-4" />
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                       onClick={() => setTheme("system")}
                       className={cn(
                         "h-8 w-8 rounded-md flex items-center justify-center",
@@ -704,10 +910,12 @@ export default function EnhancedHeaderV2() {
                           ? "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300"
                           : "bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
                       )}
+                      whileHover={{ y: -2 }}
+                      whileTap={{ y: 0 }}
                       aria-label="Modo Sistema"
                     >
                       <Laptop className="h-4 w-4" />
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
 
@@ -719,10 +927,22 @@ export default function EnhancedHeaderV2() {
                 >
                   <Button
                     onClick={handleLogout}
-                    className={`w-full bg-gradient-to-r ${themeColors.bgGradient} hover:opacity-90 text-white rounded-xl py-3`}
+                    className={`w-full bg-gradient-to-r ${themeColors.bgGradient} hover:opacity-90 text-white rounded-xl py-3 relative overflow-hidden group`}
                   >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Cerrar Sesión
+                    <motion.div
+                      className="absolute inset-0 bg-white/10"
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: "100%" }}
+                      transition={{
+                        duration: 0.6,
+                        ease: "easeInOut",
+                      }}
+                      style={{
+                        skewX: -20,
+                      }}
+                    />
+                    <LogOut className="h-4 w-4 mr-2 relative z-10" />
+                    <span className="relative z-10">Cerrar Sesión</span>
                   </Button>
                 </motion.div>
               </motion.div>
