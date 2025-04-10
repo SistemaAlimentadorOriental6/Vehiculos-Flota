@@ -282,7 +282,7 @@ function DashboardContent() {
                 >
                   <Link href="/dashboard?view=gallery">
                     <ImageIcon className="mr-2 h-5 w-5" />
-                    <span className="font-medium">Ver Galería</span>
+                    <span className="font-medium">Ver Imagenes</span>
                   </Link>
                 </Button>
               </motion.div>

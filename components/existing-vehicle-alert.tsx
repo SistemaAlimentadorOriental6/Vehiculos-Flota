@@ -158,7 +158,7 @@ export default function ExistingVehicleAlert({ vehicleId, onClose, onViewGallery
                   onClick={onViewGallery}
                 >
                   <Eye className="h-4 w-4 mr-2" />
-                  Ver galería completa
+                  Ver imagenes completas
                 </Button>
               )}
             </div>
