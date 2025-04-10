@@ -1,5 +1,7 @@
 "use client"
 
+import { DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import {
@@ -18,17 +20,22 @@ import {
   Moon,
   Laptop,
   Palette,
-  FileText,
-  LayoutDashboard,
-  Zap,
-  Sparkles,
   Shield,
   Star,
   Bookmark,
   MessageSquare,
-  UserPlus,
+  LayoutDashboard,
+  Sparkles,
+  Check,
+  ArrowRight,
+  Clock,
   Sliders,
-  Lightbulb,
+  ChevronRight,
+  CircleUser,
+  Cog,
+  BellRing,
+  Users,
+  Dot,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -39,16 +46,19 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
   DropdownMenuPortal,
+  DropdownMenuGroup,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu"
 import { useTheme } from "next-themes"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter, usePathname } from "next/navigation"
 import Cookies from "js-cookie"
+import { useMobile } from "@/hooks/use-mobile"
 
 export default function PremiumHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -64,18 +74,17 @@ export default function PremiumHeader() {
   const pathname = usePathname()
   const headerRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const isMobile = useMobile()
 
-  // Scroll effects
   const { scrollY } = useScroll()
-  const headerBgOpacity = useTransform(scrollY, [0, 100], [0, 1])
-  const headerShadow = useTransform(scrollY, [0, 100], ["0px 0px 0px rgba(0,0,0,0)", "0px 10px 30px rgba(0,0,0,0.1)"])
+  const headerBgOpacity = useTransform(scrollY, [0, 100], [0.8, 1])
+  const headerShadow = useTransform(scrollY, [0, 100], ["0px 0px 0px rgba(0,0,0,0)", "0px 10px 40px rgba(0,0,0,0.15)"])
   const logoScale = useTransform(scrollY, [0, 100], [1, 0.9])
   const navOpacity = useTransform(scrollY, [0, 100], [1, 0.95])
 
   useEffect(() => {
     setIsMounted(true)
 
-    // Cargar tema guardado
     const savedColorTheme = localStorage.getItem("header-color-theme") as
       | "green"
       | "blue"
@@ -89,12 +98,9 @@ export default function PremiumHeader() {
       setColorTheme(savedColorTheme)
     }
 
-    // Verificar notificaciones no leídas
     const checkUnreadNotifications = () => {
-      // Contar notificaciones no vistas basadas en cookies
       let unreadCount = 0
 
-      // Verificar cada versión de la app
       const appVersions = ["v1.0.0", "v1.1.0", "v1.2.0"]
       for (const version of appVersions) {
         const hasSeenCookie = Cookies.get(`sao6_seen_${version}`)
@@ -108,18 +114,19 @@ export default function PremiumHeader() {
 
     checkUnreadNotifications()
 
-    // Verificar periódicamente por nuevas notificaciones
     const interval = setInterval(checkUnreadNotifications, 60000)
 
-    // Manejar teclas de acceso rápido
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl/Cmd + K para abrir búsqueda
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault()
         setSearchOpen((prev) => !prev)
         setTimeout(() => {
           searchInputRef.current?.focus()
         }, 100)
+      }
+
+      if (e.key === "Escape" && searchOpen) {
+        setSearchOpen(false)
       }
     }
 
@@ -129,7 +136,7 @@ export default function PremiumHeader() {
       clearInterval(interval)
       window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [])
+  }, [searchOpen])
 
   const handleLogout = () => {
     logout()
@@ -160,6 +167,9 @@ export default function PremiumHeader() {
           activeNavText: "text-blue-700 dark:text-blue-300",
           ringColor: "ring-blue-500",
           shadowColor: "shadow-blue-500/20",
+          borderColor: "border-blue-200 dark:border-blue-800",
+          fillColor: "fill-blue-500",
+          accentColor: "accent-blue-500",
         }
       case "purple":
         return {
@@ -178,6 +188,9 @@ export default function PremiumHeader() {
           activeNavText: "text-purple-700 dark:text-purple-300",
           ringColor: "ring-purple-500",
           shadowColor: "shadow-purple-500/20",
+          borderColor: "border-purple-200 dark:border-purple-800",
+          fillColor: "fill-purple-500",
+          accentColor: "accent-purple-500",
         }
       case "amber":
         return {
@@ -196,6 +209,9 @@ export default function PremiumHeader() {
           activeNavText: "text-amber-700 dark:text-amber-300",
           ringColor: "ring-amber-500",
           shadowColor: "shadow-amber-500/20",
+          borderColor: "border-amber-200 dark:border-amber-800",
+          fillColor: "fill-amber-500",
+          accentColor: "accent-amber-500",
         }
       case "rose":
         return {
@@ -214,6 +230,9 @@ export default function PremiumHeader() {
           activeNavText: "text-rose-700 dark:text-rose-300",
           ringColor: "ring-rose-500",
           shadowColor: "shadow-rose-500/20",
+          borderColor: "border-rose-200 dark:border-rose-800",
+          fillColor: "fill-rose-500",
+          accentColor: "accent-rose-500",
         }
       case "teal":
         return {
@@ -232,6 +251,9 @@ export default function PremiumHeader() {
           activeNavText: "text-teal-700 dark:text-teal-300",
           ringColor: "ring-teal-500",
           shadowColor: "shadow-teal-500/20",
+          borderColor: "border-teal-200 dark:border-teal-800",
+          fillColor: "fill-teal-500",
+          accentColor: "accent-teal-500",
         }
       case "cyan":
         return {
@@ -250,6 +272,9 @@ export default function PremiumHeader() {
           activeNavText: "text-cyan-700 dark:text-cyan-300",
           ringColor: "ring-cyan-500",
           shadowColor: "shadow-cyan-500/20",
+          borderColor: "border-cyan-200 dark:border-cyan-800",
+          fillColor: "fill-cyan-500",
+          accentColor: "accent-cyan-500",
         }
       default:
         return {
@@ -268,6 +293,9 @@ export default function PremiumHeader() {
           activeNavText: "text-green-700 dark:text-green-300",
           ringColor: "ring-green-500",
           shadowColor: "shadow-green-500/20",
+          borderColor: "border-green-200 dark:border-green-800",
+          fillColor: "fill-green-500",
+          accentColor: "accent-green-500",
         }
     }
   }
@@ -288,14 +316,12 @@ export default function PremiumHeader() {
     }),
   }
 
-  // Elementos de navegación
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
     { name: "Captura", href: "/captura", icon: <Camera className="h-4 w-4" /> },
     { name: "Galería", href: "/dashboard?view=gallery", icon: <ImageIcon className="h-4 w-4" /> },
   ]
 
-  // Verificar si el enlace está activo
   const isLinkActive = (href: string) => {
     if (href === "/dashboard" && pathname === "/dashboard" && !window.location.search.includes("view=gallery")) {
       return true
@@ -313,6 +339,98 @@ export default function PremiumHeader() {
     return false
   }
 
+  // Variants for animations
+  const mobileMenuVariants = {
+    closed: { x: "100%" },
+    open: { x: 0 },
+  }
+
+  const fadeInVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+  }
+
+  const staggerChildrenVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  }
+
+  const childVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  }
+
+  const pulseVariants = {
+    pulse: {
+      scale: [1, 1.05, 1],
+      transition: {
+        duration: 2,
+        repeat: Number.POSITIVE_INFINITY,
+        repeatType: "loop",
+      },
+    },
+  }
+
+  const shimmerVariants = {
+    hidden: { x: "-100%", opacity: 0 },
+    visible: {
+      x: "200%",
+      opacity: 1,
+      transition: {
+        duration: 1.5,
+        repeat: Number.POSITIVE_INFINITY,
+        repeatType: "loop",
+        ease: "linear",
+        repeatDelay: 1,
+      },
+    },
+  }
+
+  // CSS para el patrón de fondo
+  const bgPatternStyle = {
+    backgroundSize: "20px 20px",
+    backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
+    backgroundPosition: "0 0",
+  }
+
+  const notificationItems = [
+    {
+      id: 1,
+      title: "Nueva versión disponible",
+      description: "Actualización v1.2.0 con mejoras de seguridad",
+      time: "Hace 2 horas",
+      icon: <Star className="h-4 w-4 text-white" />,
+      color: "from-amber-400 to-amber-300",
+      shadow: "shadow-amber-500/20",
+      isNew: true,
+    },
+    {
+      id: 2,
+      title: "Bienvenido al sistema",
+      description: "Explora todas las funcionalidades disponibles",
+      time: "Hace 1 día",
+      icon: <Bookmark className="h-4 w-4 text-white" />,
+      color: `${themeColors.lightGradient}`,
+      shadow: `${themeColors.shadowColor}`,
+      isNew: true,
+    },
+    {
+      id: 3,
+      title: "Mantenimiento programado",
+      description: "El sistema estará en mantenimiento el próximo viernes",
+      time: "Hace 3 días",
+      icon: <Cog className="h-4 w-4 text-white" />,
+      color: "from-gray-400 to-gray-300",
+      shadow: "shadow-gray-500/20",
+      isNew: false,
+    },
+  ]
+
   return (
     <>
       <motion.header
@@ -320,52 +438,56 @@ export default function PremiumHeader() {
         style={{
           boxShadow: isMounted ? headerShadow : "none",
           backgroundColor:
-            theme === "dark" ? "rgba(3, 7, 18, 0.85)" : `rgba(255, 255, 255, ${isMounted ? headerBgOpacity.get() : 0})`,
+            theme === "dark"
+              ? "rgba(3, 7, 18, 0.95)"
+              : `rgba(255, 255, 255, ${isMounted ? headerBgOpacity.get() : 0.95})`,
         }}
         className={cn(
-          "sticky top-0 z-50 w-full backdrop-blur-xl",
-          theme === "dark" ? "border-b border-gray-800/50 text-white" : "border-b border-gray-100/50",
+          "sticky top-0 z-50 w-full backdrop-blur-xl transition-all duration-300",
+          theme === "dark" ? "border-b border-gray-800/50 text-white" : "border-b border-gray-200/50",
         )}
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 20 }}
       >
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-2 md:gap-4">
-              <Link href="/dashboard" className="flex items-center gap-2">
+            {/* Logo and Brand */}
+            <div className="flex items-center gap-3 md:gap-4">
+              <Link href="/dashboard" className="flex items-center gap-3 group">
                 <motion.div
                   style={{ scale: logoScale }}
-                  whileHover={{ rotate: 5, scale: 1.05 }}
+                  whileHover={{ rotate: 5, scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   className={cn(
-                    "bg-gradient-to-r p-2 rounded-xl shadow-lg relative overflow-hidden group",
-                    themeColors.bgGradient,
+                    "relative overflow-hidden rounded-2xl shadow-lg",
+                    theme === "dark" ? "shadow-black/30" : "shadow-gray-400/30",
                   )}
                 >
-                  <Camera className="h-6 w-6 text-white relative z-10" />
-                  <motion.div
-                    className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 0 }}
-                    transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
-                  />
-                  {/* Efecto de brillo */}
+                  <div className={cn("bg-gradient-to-br p-2.5 relative z-10", themeColors.bgGradient)}>
+                    <Camera className="h-6 w-6 text-white" />
+                  </div>
+
+                  {/* Animated background effects */}
+                  <motion.div className="absolute inset-0 bg-white/20" variants={pulseVariants} animate="pulse" />
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                    initial={{ x: "-100%" }}
-                    animate={{ x: "200%" }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Number.POSITIVE_INFINITY,
-                      repeatType: "loop",
-                      ease: "linear",
-                      repeatDelay: 1,
-                    }}
+                    variants={shimmerVariants}
+                    initial="hidden"
+                    animate="visible"
+                  />
+
+                  {/* Glow effect on hover */}
+                  <motion.div
+                    className={cn(
+                      "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                      `bg-gradient-to-br ${themeColors.bgGradient} blur-xl`,
+                    )}
                   />
                 </motion.div>
+
                 <div className="hidden sm:block">
-                  <h1 className="font-bold text-xl flex">
+                  <h1 className="font-bold text-xl flex space-x-0.5 tracking-tight">
                     {title.split("").map((char, i) => (
                       <motion.span
                         key={i}
@@ -379,11 +501,17 @@ export default function PremiumHeader() {
                       </motion.span>
                     ))}
                   </h1>
+                  <motion.div
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: "100%" }}
+                    transition={{ delay: 0.8, duration: 0.5 }}
+                    className={cn("h-0.5 rounded-full mt-0.5 bg-gradient-to-r", themeColors.bgGradient)}
+                  />
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5, duration: 0.3 }}
-                    className={cn("text-xs", themeColors.textColor, themeColors.darkText)}
+                    className={cn("text-xs font-medium mt-1", themeColors.textColor, themeColors.darkText)}
                   >
                     Sistema profesional de documentación
                   </motion.p>
@@ -391,19 +519,21 @@ export default function PremiumHeader() {
               </Link>
             </div>
 
-            <div className="flex items-center gap-1 md:gap-2">
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 md:gap-3">
               {/* Search button/bar */}
-              <AnimatePresence>
+              <AnimatePresence mode="wait">
                 {searchOpen ? (
                   <motion.div
                     initial={{ width: 40, opacity: 0 }}
-                    animate={{ width: 250, opacity: 1 }}
+                    animate={{ width: isMobile ? 220 : 320, opacity: 1 }}
                     exit={{ width: 40, opacity: 0 }}
                     className="relative"
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
                   >
                     <div
                       className={cn(
-                        "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none",
+                        "absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none",
                         theme === "dark" ? "text-gray-400" : "text-gray-500",
                       )}
                     >
@@ -414,10 +544,11 @@ export default function PremiumHeader() {
                       type="text"
                       placeholder="Buscar vehículo... (Esc para cerrar)"
                       className={cn(
-                        "w-full h-9 pl-10 pr-10 py-2 text-sm rounded-full border focus:outline-none focus:ring-2",
+                        "w-full h-10 pl-10 pr-10 py-2 text-sm rounded-full border-2 focus:outline-none focus:ring-2 transition-all duration-200",
                         theme === "dark"
-                          ? `bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-400 focus:${themeColors.ringColor} focus:ring-offset-gray-900`
-                          : `bg-gray-50 border-gray-200 focus:${themeColors.ringColor} focus:ring-offset-white`,
+                          ? `bg-gray-800/60 border-gray-700 text-white placeholder:text-gray-400 focus:${themeColors.ringColor} focus:ring-offset-gray-900`
+                          : `bg-gray-50/80 border-gray-200 focus:${themeColors.ringColor} focus:ring-offset-white`,
+                        themeColors.borderColor,
                       )}
                       autoFocus
                       onKeyDown={(e) => {
@@ -439,7 +570,7 @@ export default function PremiumHeader() {
                       </kbd>
                       <button
                         className={cn(
-                          "ml-1 rounded-full p-1 hover:bg-gray-200 dark:hover:bg-gray-700",
+                          "ml-1 rounded-full p-1 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200",
                           theme === "dark" ? "text-gray-400" : "text-gray-500",
                         )}
                         onClick={() => setSearchOpen(false)}
@@ -454,13 +585,17 @@ export default function PremiumHeader() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className={cn(
-                      "p-2 rounded-full transition-colors duration-200 flex items-center gap-1",
-                      theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
+                      "relative p-2.5 rounded-full transition-all duration-300 flex items-center gap-1",
+                      theme === "dark"
+                        ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-700",
                     )}
                     onClick={() => setSearchOpen(true)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     <Search className="h-4 w-4" />
-                    <span className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400">
+                    <span className="hidden sm:inline text-xs font-medium ml-1 mr-1">
                       <kbd
                         className={cn(
                           "inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium",
@@ -472,6 +607,15 @@ export default function PremiumHeader() {
                         <span className="text-xs">⌘</span>K
                       </kbd>
                     </span>
+
+                    {/* Subtle glow effect */}
+                    <motion.div
+                      className={cn(
+                        "absolute inset-0 rounded-full opacity-0 hover:opacity-20 transition-opacity duration-300",
+                        theme === "dark" ? "bg-gray-400" : `bg-gradient-to-r ${themeColors.bgGradient}`,
+                        "blur-sm",
+                      )}
+                    />
                   </motion.button>
                 )}
               </AnimatePresence>
@@ -483,92 +627,210 @@ export default function PremiumHeader() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className={cn(
-                      "p-2 rounded-full transition-colors duration-200 relative",
-                      theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
+                      "relative p-2.5 rounded-full transition-all duration-300",
+                      theme === "dark"
+                        ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-700",
                     )}
                   >
                     <Bell className="h-5 w-5" />
                     {notifications > 0 && (
-                      <motion.span
+                      <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className={`absolute -top-1 -right-1 bg-gradient-to-r ${themeColors.bgGradient} text-white text-xs rounded-full h-5 w-5 flex items-center justify-center shadow-lg ${themeColors.shadowColor}`}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 10,
+                        }}
+                        className={cn(
+                          "absolute -top-1 -right-1 flex items-center justify-center",
+                          "w-5 h-5 rounded-full text-xs font-bold text-white",
+                          `bg-gradient-to-br ${themeColors.bgGradient} ${themeColors.shadowColor}`,
+                          "shadow-lg",
+                        )}
                       >
                         {notifications}
-                      </motion.span>
+                      </motion.div>
                     )}
+
+                    {/* Subtle glow effect */}
+                    <motion.div
+                      className={cn(
+                        "absolute inset-0 rounded-full opacity-0 hover:opacity-20 transition-opacity duration-300",
+                        theme === "dark" ? "bg-gray-400" : `bg-gradient-to-r ${themeColors.bgGradient}`,
+                        "blur-sm",
+                      )}
+                    />
                   </motion.button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-80 backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800 p-0 overflow-hidden"
+                  className={cn(
+                    "w-[350px] p-0 overflow-hidden rounded-xl shadow-xl",
+                    theme === "dark" ? "bg-gray-900/95 border border-gray-800" : "bg-white/95 border border-gray-200",
+                    "backdrop-blur-xl",
+                  )}
+                  forceMount
                 >
-                  <div className={`p-4 bg-gradient-to-r ${themeColors.bgGradient} text-white`}>
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold flex items-center gap-2">
-                        <Bell className="h-4 w-4" />
-                        Notificaciones
-                      </h3>
-                      <span className="text-xs bg-white/20 px-2 py-1 rounded-full">{notifications} nuevas</span>
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={cn("relative overflow-hidden")}
+                  >
+                    {/* Header with background pattern */}
+                    <div className={cn("p-4 relative", `bg-gradient-to-r ${themeColors.bgGradient}`)}>
+                      {/* Background pattern */}
+                      <div className="absolute inset-0 opacity-10">
+                        <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                          <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" />
+                          </pattern>
+                          <rect width="100" height="100" fill="url(#grid)" />
+                        </svg>
+                      </div>
+
+                      <div className="flex items-center justify-between relative z-10">
+                        <h3 className="font-semibold text-white flex items-center gap-2">
+                          <BellRing className="h-4 w-4" />
+                          Centro de Notificaciones
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs bg-white/20 px-2 py-1 rounded-full text-white">
+                            {notifications} nuevas
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="max-h-[300px] overflow-y-auto">
-                    {notifications > 0 ? (
-                      <div className="p-2 space-y-1">
-                        <div
-                          className={`p-3 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-50"} hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors`}
+                    {/* Tabs */}
+                    <div className="flex border-b border-gray-100 dark:border-gray-800">
+                      <button
+                        className={cn(
+                          "flex-1 py-2.5 px-4 text-sm font-medium relative",
+                          "text-white bg-gradient-to-r",
+                          themeColors.bgGradient,
+                        )}
+                      >
+                        Recientes
+                        <motion.div
+                          layoutId="notificationTabIndicator"
+                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-white"
+                        />
+                      </button>
+                      <button
+                        className={cn(
+                          "flex-1 py-2.5 px-4 text-sm font-medium",
+                          theme === "dark" ? "text-gray-400" : "text-gray-600",
+                        )}
+                      >
+                        Todas
+                      </button>
+                    </div>
+
+                    <div className="max-h-[350px] overflow-y-auto">
+                      {notifications > 0 ? (
+                        <motion.div
+                          className="p-1"
+                          variants={staggerChildrenVariants}
+                          initial="hidden"
+                          animate="visible"
                         >
-                          <div className="flex items-start gap-3">
-                            <div
-                              className={`p-2 rounded-full bg-gradient-to-r ${themeColors.lightGradient} ${themeColors.shadowColor}`}
+                          {notificationItems.map((item) => (
+                            <motion.div
+                              key={item.id}
+                              variants={childVariants}
+                              className={cn(
+                                "p-3 m-1 rounded-lg cursor-pointer transition-all duration-200",
+                                theme === "dark"
+                                  ? "bg-gray-800/80 hover:bg-gray-750"
+                                  : "bg-gray-50/90 hover:bg-gray-100",
+                                item.isNew && (theme === "dark" ? "ring-1 ring-gray-700" : "ring-1 ring-gray-200"),
+                              )}
                             >
-                              <Star className="h-4 w-4 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium">Nueva versión disponible</p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Actualización v1.2.0 con mejoras de seguridad
-                              </p>
-                              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Hace 2 horas</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div
-                          className={`p-3 rounded-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-50"} hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors`}
+                              <div className="flex items-start gap-3">
+                                <div className={cn("p-2 rounded-full bg-gradient-to-r", item.color, item.shadow)}>
+                                  {item.icon}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between">
+                                    <p
+                                      className={cn(
+                                        "text-sm font-medium truncate",
+                                        theme === "dark" ? "text-white" : "text-gray-900",
+                                      )}
+                                    >
+                                      {item.title}
+                                    </p>
+                                    {item.isNew && (
+                                      <span
+                                        className={cn(
+                                          "text-xs px-1.5 py-0.5 rounded-full ml-2 whitespace-nowrap",
+                                          theme === "dark" ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-700",
+                                        )}
+                                      >
+                                        Nueva
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.description}</p>
+                                  <div className="flex items-center mt-1.5 text-xs text-gray-400 dark:text-gray-500">
+                                    <Clock className="h-3 w-3 mr-1" />
+                                    {item.time}
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.2 }}
+                          className="p-8 text-center"
                         >
-                          <div className="flex items-start gap-3">
-                            <div
-                              className={`p-2 rounded-full bg-gradient-to-r from-amber-400 to-amber-300 shadow-amber-500/20`}
-                            >
-                              <Bookmark className="h-4 w-4 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium">Bienvenido al sistema</p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Explora todas las funcionalidades disponibles
-                              </p>
-                              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Hace 1 día</p>
-                            </div>
+                          <div
+                            className={cn(
+                              "mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4",
+                              theme === "dark" ? "bg-gray-800" : "bg-gray-100",
+                              themeColors.textColor,
+                            )}
+                          >
+                            <Bell className="h-8 w-8" />
                           </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="p-6 text-center">
-                        <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
-                          <Bell className="h-6 w-6 text-gray-400" />
-                        </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">No tienes notificaciones nuevas</p>
-                      </div>
-                    )}
-                  </div>
+                          <h4
+                            className={cn(
+                              "text-base font-medium mb-1",
+                              theme === "dark" ? "text-white" : "text-gray-900",
+                            )}
+                          >
+                            No hay notificaciones
+                          </h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-[250px] mx-auto">
+                            Cuando recibas notificaciones, aparecerán aquí
+                          </p>
+                        </motion.div>
+                      )}
+                    </div>
 
-                  <div className="p-2 border-t border-gray-100 dark:border-gray-800">
-                    <Button variant="ghost" size="sm" className="w-full justify-center text-xs">
-                      Ver todas las notificaciones
-                    </Button>
-                  </div>
+                    <div className={cn("p-2 border-t", theme === "dark" ? "border-gray-800" : "border-gray-100")}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                          "w-full justify-center text-xs font-medium",
+                          theme === "dark"
+                            ? "border-gray-800 hover:bg-gray-800 text-gray-300"
+                            : "border-gray-200 hover:bg-gray-50 text-gray-700",
+                        )}
+                      >
+                        Ver todas las notificaciones
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    </div>
+                  </motion.div>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -579,135 +841,240 @@ export default function PremiumHeader() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className={cn(
-                      "p-2 rounded-full hidden md:flex transition-colors duration-200",
-                      theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
+                      "relative p-2.5 rounded-full transition-all duration-300 hidden md:flex",
+                      theme === "dark"
+                        ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-700",
                     )}
                   >
                     <Settings className="h-5 w-5" />
+
+                    {/* Subtle glow effect */}
+                    <motion.div
+                      className={cn(
+                        "absolute inset-0 rounded-full opacity-0 hover:opacity-20 transition-opacity duration-300",
+                        theme === "dark" ? "bg-gray-400" : `bg-gradient-to-r ${themeColors.bgGradient}`,
+                        "blur-sm",
+                      )}
+                    />
                   </motion.button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-56 backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800"
+                  className={cn(
+                    "w-[280px] p-2 rounded-xl shadow-xl",
+                    theme === "dark" ? "bg-gray-900/95 border border-gray-800" : "bg-white/95 border border-gray-200",
+                    "backdrop-blur-xl",
+                  )}
+                  forceMount
                 >
-                  <DropdownMenuLabel className="flex items-center gap-2">
-                    <Sparkles className={`h-4 w-4 ${themeColors.textColor}`} />
-                    <span>Personalización</span>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger className="flex items-center gap-2">
-                      <Palette className="h-4 w-4 mr-2" />
-                      <span>Color del Tema</span>
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                      <DropdownMenuSubContent className="backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800 grid grid-cols-2 gap-1 p-2 w-56">
-                        <DropdownMenuItem
-                          onClick={() => changeColorTheme("green")}
-                          className="flex items-center gap-2 p-2 rounded-lg"
-                        >
-                          <div className="h-6 w-6 rounded-full bg-gradient-to-r from-green-600 to-green-500 shadow-lg shadow-green-500/20" />
-                          <span>Verde</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => changeColorTheme("blue")}
-                          className="flex items-center gap-2 p-2 rounded-lg"
-                        >
-                          <div className="h-6 w-6 rounded-full bg-gradient-to-r from-blue-600 to-blue-500 shadow-lg shadow-blue-500/20" />
-                          <span>Azul</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => changeColorTheme("purple")}
-                          className="flex items-center gap-2 p-2 rounded-lg"
-                        >
-                          <div className="h-6 w-6 rounded-full bg-gradient-to-r from-purple-600 to-purple-500 shadow-lg shadow-purple-500/20" />
-                          <span>Púrpura</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => changeColorTheme("amber")}
-                          className="flex items-center gap-2 p-2 rounded-lg"
-                        >
-                          <div className="h-6 w-6 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 shadow-lg shadow-amber-500/20" />
-                          <span>Ámbar</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => changeColorTheme("rose")}
-                          className="flex items-center gap-2 p-2 rounded-lg"
-                        >
-                          <div className="h-6 w-6 rounded-full bg-gradient-to-r from-rose-600 to-rose-500 shadow-lg shadow-rose-500/20" />
-                          <span>Rosa</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => changeColorTheme("teal")}
-                          className="flex items-center gap-2 p-2 rounded-lg"
-                        >
-                          <div className="h-6 w-6 rounded-full bg-gradient-to-r from-teal-600 to-teal-500 shadow-lg shadow-teal-500/20" />
-                          <span>Teal</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => changeColorTheme("cyan")}
-                          className="flex items-center gap-2 p-2 rounded-lg"
-                        >
-                          <div className="h-6 w-6 rounded-full bg-gradient-to-r from-cyan-600 to-cyan-500 shadow-lg shadow-cyan-500/20" />
-                          <span>Cyan</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuSub>
-
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger className="flex items-center gap-2">
-                      {theme === "dark" ? (
-                        <Moon className="h-4 w-4 mr-2" />
-                      ) : theme === "light" ? (
-                        <Sun className="h-4 w-4 mr-2" />
-                      ) : (
-                        <Laptop className="h-4 w-4 mr-2" />
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <DropdownMenuLabel
+                      className={cn(
+                        "px-2 py-1.5 text-base font-semibold",
+                        theme === "dark" ? "text-white" : "text-gray-900",
                       )}
-                      <span>Modo de Visualización</span>
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                      <DropdownMenuSubContent className="backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800">
-                        <DropdownMenuItem onClick={() => setTheme("light")} className="flex items-center gap-2">
-                          <div className="p-1 rounded-md bg-amber-100">
-                            <Sun className="h-4 w-4 text-amber-500" />
-                          </div>
-                          <span>Claro</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTheme("dark")} className="flex items-center gap-2">
-                          <div className="p-1 rounded-md bg-blue-100 dark:bg-blue-900/30">
-                            <Moon className="h-4 w-4 text-blue-500" />
-                          </div>
-                          <span>Oscuro</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTheme("system")} className="flex items-center gap-2">
-                          <div className="p-1 rounded-md bg-gray-100 dark:bg-gray-800">
-                            <Laptop className="h-4 w-4 text-gray-500" />
-                          </div>
-                          <span>Sistema</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuSub>
+                    >
+                      Configuración
+                    </DropdownMenuLabel>
 
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="flex items-center gap-2">
-                    <HelpCircle className="h-4 w-4 mr-2" />
-                    <span>Ayuda y Soporte</span>
-                  </DropdownMenuItem>
+                    <DropdownMenuSeparator className="my-1" />
+
+                    <DropdownMenuGroup>
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger
+                          className={cn(
+                            "flex items-center gap-2 rounded-lg my-1 cursor-pointer",
+                            theme === "dark"
+                              ? "hover:bg-gray-800 focus:bg-gray-800"
+                              : "hover:bg-gray-100 focus:bg-gray-100",
+                          )}
+                        >
+                          <div className={cn("p-1.5 rounded-md", themeColors.iconBg, themeColors.iconColor)}>
+                            <Palette className="h-4 w-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={cn("text-sm font-medium", theme === "dark" ? "text-white" : "text-gray-900")}>
+                              Tema de Color
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              Personaliza los colores del sistema
+                            </p>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-gray-400" />
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                          <DropdownMenuSubContent
+                            className={cn(
+                              "p-1 rounded-lg shadow-xl min-w-[180px]",
+                              theme === "dark"
+                                ? "bg-gray-900/95 border border-gray-800"
+                                : "bg-white/95 border border-gray-200",
+                              "backdrop-blur-xl",
+                            )}
+                          >
+                            <DropdownMenuRadioGroup
+                              value={colorTheme}
+                              onValueChange={(value) => changeColorTheme(value as any)}
+                            >
+                              {[
+                                { value: "green", label: "Verde" },
+                                { value: "blue", label: "Azul" },
+                                { value: "purple", label: "Púrpura" },
+                                { value: "amber", label: "Ámbar" },
+                                { value: "rose", label: "Rosa" },
+                                { value: "teal", label: "Teal" },
+                                { value: "cyan", label: "Cian" },
+                              ].map((item) => (
+                                <DropdownMenuRadioItem
+                                  key={item.value}
+                                  value={item.value}
+                                  className={cn(
+                                    "flex items-center gap-2 rounded-md cursor-pointer py-1.5 px-2",
+                                    theme === "dark"
+                                      ? "hover:bg-gray-800 focus:bg-gray-800"
+                                      : "hover:bg-gray-100 focus:bg-gray-100",
+                                    "data-[state=checked]:bg-gray-100 dark:data-[state=checked]:bg-gray-800",
+                                  )}
+                                >
+                                  <div
+                                    className={cn(
+                                      "h-4 w-4 rounded-full bg-gradient-to-r",
+                                      `from-${item.value}-600 to-${item.value}-500`,
+                                    )}
+                                  />
+                                  <span className={cn("text-sm", theme === "dark" ? "text-white" : "text-gray-900")}>
+                                    {item.label}
+                                  </span>
+                                  {colorTheme === item.value && <Check className="h-4 w-4 ml-auto text-gray-500" />}
+                                </DropdownMenuRadioItem>
+                              ))}
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
+
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger
+                          className={cn(
+                            "flex items-center gap-2 rounded-lg my-1 cursor-pointer",
+                            theme === "dark"
+                              ? "hover:bg-gray-800 focus:bg-gray-800"
+                              : "hover:bg-gray-100 focus:bg-gray-100",
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "p-1.5 rounded-md",
+                              theme === "dark" ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-700",
+                            )}
+                          >
+                            {theme === "dark" ? (
+                              <Moon className="h-4 w-4" />
+                            ) : theme === "light" ? (
+                              <Sun className="h-4 w-4" />
+                            ) : (
+                              <Laptop className="h-4 w-4" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={cn("text-sm font-medium", theme === "dark" ? "text-white" : "text-gray-900")}>
+                              Modo de Visualización
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Ajusta el tema de la interfaz</p>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-gray-400" />
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                          <DropdownMenuSubContent
+                            className={cn(
+                              "p-1 rounded-lg shadow-xl min-w-[180px]",
+                              theme === "dark"
+                                ? "bg-gray-900/95 border border-gray-800"
+                                : "bg-white/95 border border-gray-200",
+                              "backdrop-blur-xl",
+                            )}
+                          >
+                            <DropdownMenuRadioGroup value={theme || "system"} onValueChange={setTheme}>
+                              {[
+                                { value: "light", label: "Claro", icon: Sun, color: "amber" },
+                                { value: "dark", label: "Oscuro", icon: Moon, color: "blue" },
+                                { value: "system", label: "Sistema", icon: Laptop, color: "gray" },
+                              ].map((item) => (
+                                <DropdownMenuRadioItem
+                                  key={item.value}
+                                  value={item.value}
+                                  className={cn(
+                                    "flex items-center gap-2 rounded-md cursor-pointer py-1.5 px-2",
+                                    theme === "dark"
+                                      ? "hover:bg-gray-800 focus:bg-gray-800"
+                                      : "hover:bg-gray-100 focus:bg-gray-100",
+                                    "data-[state=checked]:bg-gray-100 dark:data-[state=checked]:bg-gray-800",
+                                  )}
+                                >
+                                  <div
+                                    className={cn(
+                                      "p-1 rounded-md",
+                                      `bg-${item.color}-100 dark:bg-${item.color}-900/30`,
+                                      `text-${item.color}-500`,
+                                    )}
+                                  >
+                                    <item.icon className="h-4 w-4" />
+                                  </div>
+                                  <span className={cn("text-sm", theme === "dark" ? "text-white" : "text-gray-900")}>
+                                    {item.label}
+                                  </span>
+                                  {theme === item.value && <Check className="h-4 w-4 ml-auto text-gray-500" />}
+                                </DropdownMenuRadioItem>
+                              ))}
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
+                    </DropdownMenuGroup>
+
+                    <DropdownMenuSeparator className="my-1" />
+
+                    <DropdownMenuItem
+                      className={cn(
+                        "flex items-center gap-2 rounded-lg my-1 cursor-pointer",
+                        theme === "dark"
+                          ? "hover:bg-gray-800 focus:bg-gray-800"
+                          : "hover:bg-gray-100 focus:bg-gray-100",
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "p-1.5 rounded-md",
+                          theme === "dark" ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-700",
+                        )}
+                      >
+                        <HelpCircle className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={cn("text-sm font-medium", theme === "dark" ? "text-white" : "text-gray-900")}>
+                          Ayuda y Soporte
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Accede a recursos de ayuda</p>
+                      </div>
+                    </DropdownMenuItem>
+                  </motion.div>
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* User Menu */}
+              {/* User Profile */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className={cn(
-                      "flex items-center gap-2 p-1 rounded-full transition-colors duration-200",
-                      theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
+                      "flex items-center gap-2 p-1 px-2 rounded-full transition-all duration-300",
+                      theme === "dark" ? "bg-gray-800 hover:bg-gray-700" : "bg-gray-100 hover:bg-gray-200",
                     )}
                   >
                     <div
@@ -717,90 +1084,129 @@ export default function PremiumHeader() {
                       )}
                     >
                       {user ? user.charAt(0).toUpperCase() : "U"}
-                      {/* Efecto de brillo */}
                       <motion.div
                         className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                        initial={{ x: "-100%" }}
-                        animate={{ x: "200%" }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: Number.POSITIVE_INFINITY,
-                          repeatType: "loop",
-                          ease: "linear",
-                          repeatDelay: 3,
-                        }}
+                        variants={shimmerVariants}
+                        initial="hidden"
+                        animate="visible"
                       />
                     </div>
-                    <ChevronDown className="h-4 w-4 hidden md:block" />
+                    <span
+                      className={cn(
+                        "hidden md:block text-sm font-medium",
+                        theme === "dark" ? "text-white" : "text-gray-900",
+                      )}
+                    >
+                      {user || "Usuario"}
+                    </span>
+                    <ChevronDown className="h-4 w-4 hidden md:block text-gray-400" />
                   </motion.button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-64 backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 border-gray-200 dark:border-gray-800 p-0 overflow-hidden"
+                  className={cn(
+                    "w-[280px] p-0 overflow-hidden rounded-xl shadow-xl",
+                    theme === "dark" ? "bg-gray-900/95 border border-gray-800" : "bg-white/95 border border-gray-200",
+                    "backdrop-blur-xl",
+                  )}
+                  forceMount
                 >
-                  <div className={`p-4 bg-gradient-to-r ${themeColors.bgGradient} text-white`}>
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center shadow-inner">
-                        <User className="h-6 w-6" />
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={cn("relative p-5", `bg-gradient-to-r ${themeColors.bgGradient}`)}
+                  >
+                    {/* Background pattern */}
+                    <div className="absolute inset-0 opacity-10">
+                      <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <pattern id="user-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                          <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" />
+                        </pattern>
+                        <rect width="100" height="100" fill="url(#user-grid)" />
+                      </svg>
+                    </div>
+
+                    <div className="flex items-center gap-4 relative z-10">
+                      <div className="h-14 w-14 rounded-full bg-white/20 flex items-center justify-center shadow-inner">
+                        <User className="h-7 w-7 text-white" />
                       </div>
                       <div>
-                        <p className="font-medium text-lg">{user || "Usuario"}</p>
-                        <div className="flex items-center gap-1 text-xs text-white/80">
+                        <p className="font-medium text-lg text-white">{user || "Usuario"}</p>
+                        <div className="flex items-center gap-1 text-xs text-white/80 mt-0.5">
                           <Shield className="h-3 w-3" />
                           <span>Administrador</span>
                         </div>
+                        <div className="flex items-center gap-1 mt-2">
+                          <span
+                            className={cn(
+                              "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
+                              "bg-white/20 text-white",
+                            )}
+                          >
+                            <Dot className="h-3 w-3 mr-0.5 text-green-400" />
+                            Activo
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
 
                   <div className="p-2">
                     <div className="grid grid-cols-2 gap-1">
-                      <DropdownMenuItem className="flex flex-col items-center justify-center p-3 rounded-lg">
-                        <div
-                          className={`p-2 rounded-full bg-gradient-to-r ${themeColors.lightGradient} ${themeColors.shadowColor} mb-1`}
-                        >
-                          <User className="h-4 w-4 text-white" />
-                        </div>
-                        <span className="text-xs">Mi Perfil</span>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem className="flex flex-col items-center justify-center p-3 rounded-lg">
-                        <div
-                          className={`p-2 rounded-full bg-gradient-to-r ${themeColors.lightGradient} ${themeColors.shadowColor} mb-1`}
-                        >
-                          <Settings className="h-4 w-4 text-white" />
-                        </div>
-                        <span className="text-xs">Configuración</span>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem className="flex flex-col items-center justify-center p-3 rounded-lg">
-                        <div
-                          className={`p-2 rounded-full bg-gradient-to-r ${themeColors.lightGradient} ${themeColors.shadowColor} mb-1`}
-                        >
-                          <MessageSquare className="h-4 w-4 text-white" />
-                        </div>
-                        <span className="text-xs">Mensajes</span>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem className="flex flex-col items-center justify-center p-3 rounded-lg">
-                        <div
-                          className={`p-2 rounded-full bg-gradient-to-r ${themeColors.lightGradient} ${themeColors.shadowColor} mb-1`}
-                        >
-                          <UserPlus className="h-4 w-4 text-white" />
-                        </div>
-                        <span className="text-xs">Usuarios</span>
-                      </DropdownMenuItem>
+                      {[
+                        { icon: CircleUser, label: "Mi Perfil" },
+                        { icon: Sliders, label: "Configuración" },
+                        { icon: MessageSquare, label: "Mensajes" },
+                        { icon: Users, label: "Usuarios" },
+                      ].map((item, index) => (
+                        <motion.div key={index} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <DropdownMenuItem
+                            className={cn(
+                              "flex flex-col items-center justify-center p-3 rounded-lg",
+                              theme === "dark"
+                                ? "hover:bg-gray-800 focus:bg-gray-800"
+                                : "hover:bg-gray-100 focus:bg-gray-100",
+                            )}
+                          >
+                            <div
+                              className={cn(
+                                "p-2 rounded-full mb-1.5",
+                                `bg-gradient-to-r ${themeColors.lightGradient} ${themeColors.shadowColor}`,
+                              )}
+                            >
+                              <item.icon className="h-4 w-4 text-white" />
+                            </div>
+                            <span
+                              className={cn("text-xs font-medium", theme === "dark" ? "text-white" : "text-gray-900")}
+                            >
+                              {item.label}
+                            </span>
+                          </DropdownMenuItem>
+                        </motion.div>
+                      ))}
                     </div>
                   </div>
 
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 m-2 p-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    <span>Cerrar Sesión</span>
-                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="my-1" />
+
+                  <div className="p-2">
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <DropdownMenuItem
+                        onClick={handleLogout}
+                        className={cn(
+                          "flex items-center gap-2 m-1 p-2 rounded-lg",
+                          "text-red-600 dark:text-red-400",
+                          "hover:bg-red-50 dark:hover:bg-red-900/20",
+                        )}
+                      >
+                        <div className="p-1.5 rounded-md bg-red-100 dark:bg-red-900/30 text-red-500">
+                          <LogOut className="h-4 w-4" />
+                        </div>
+                        <span className="font-medium">Cerrar Sesión</span>
+                      </DropdownMenuItem>
+                    </motion.div>
+                  </div>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -808,14 +1214,25 @@ export default function PremiumHeader() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                variant="ghost"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className={cn(
-                  "p-2 rounded-full md:hidden transition-colors duration-200",
-                  theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100",
+                  "relative p-2.5 rounded-full transition-all duration-300 md:hidden",
+                  theme === "dark"
+                    ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                    : "bg-gray-100 hover:bg-gray-200 text-gray-700",
                 )}
+                aria-label="Abrir menú"
               >
                 {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+
+                {/* Subtle glow effect */}
+                <motion.div
+                  className={cn(
+                    "absolute inset-0 rounded-full opacity-0 hover:opacity-20 transition-opacity duration-300",
+                    theme === "dark" ? "bg-gray-400" : `bg-gradient-to-r ${themeColors.bgGradient}`,
+                    "blur-sm",
+                  )}
+                />
               </motion.button>
             </div>
           </div>
@@ -827,46 +1244,166 @@ export default function PremiumHeader() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className={cn(
-            "hidden md:block border-t",
-            theme === "dark" ? "bg-gray-900/50 border-gray-800/50" : "bg-gray-50/50 border-gray-100/50",
-          )}
+          className={cn("hidden md:block relative z-10", theme === "dark" ? "text-white" : "text-gray-900")}
         >
-          <div className="container mx-auto px-4">
-            <nav className="flex items-center gap-1">
-              {navItems.map((item) => {
+          {/* Decorative background with pattern */}
+          <div
+            className={cn(
+              "absolute inset-x-0 top-0 h-full",
+              theme === "dark"
+                ? "bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900"
+                : "bg-gradient-to-r from-gray-50 via-white to-gray-50",
+            )}
+          >
+            <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+            <div
+              className={cn(
+                "absolute bottom-0 left-0 right-0 h-[1px]",
+                theme === "dark"
+                  ? "bg-gradient-to-r from-transparent via-gray-700 to-transparent"
+                  : "bg-gradient-to-r from-transparent via-gray-200 to-transparent",
+              )}
+            ></div>
+          </div>
+
+          <div className="container mx-auto px-4 relative z-10">
+            <nav className="flex items-center justify-center gap-4 py-2">
+              {navItems.map((item, idx) => {
                 const isActive = typeof window !== "undefined" && isLinkActive(item.href)
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "px-4 py-2.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-all duration-200 relative",
+                      "group relative flex items-center gap-3 px-5 py-2.5 overflow-hidden transition-all duration-300",
+                      "rounded-xl backdrop-blur-sm",
                       isActive
-                        ? `${themeColors.activeNavBg} ${themeColors.activeNavText}`
+                        ? theme === "dark"
+                          ? `bg-gray-800/80 ${themeColors.textColor} shadow-lg shadow-black/10`
+                          : `bg-white/80 ${themeColors.textColor} shadow-lg shadow-gray-200/50`
                         : theme === "dark"
-                          ? "text-gray-300 hover:bg-gray-800 hover:text-white"
-                          : `text-gray-700 ${themeColors.hoverBg} ${themeColors.hoverText}`,
+                          ? "text-gray-300 hover:text-white hover:bg-gray-800/40"
+                          : `text-gray-700 hover:${themeColors.textColor} hover:bg-white/60`,
                     )}
                   >
-                    <div
-                      className={cn(
-                        "p-1.5 rounded-md",
-                        isActive
-                          ? `bg-gradient-to-r ${themeColors.bgGradient} text-white shadow-md ${themeColors.shadowColor}`
-                          : "bg-gray-200 dark:bg-gray-700",
-                      )}
-                    >
-                      {item.icon}
-                    </div>
-                    {item.name}
+                    {/* Animated background for active state */}
                     {isActive && (
                       <motion.div
-                        layoutId="activeIndicator"
-                        className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${themeColors.bgGradient}`}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className={cn("absolute inset-0 opacity-10", `bg-gradient-to-r ${themeColors.bgGradient}`)}
+                        initial={{ opacity: 0 }}
+                        animate={{
+                          opacity: [0.05, 0.15, 0.05],
+                          backgroundPosition: ["0% 0%", "100% 100%"],
+                        }}
+                        transition={{
+                          duration: 5,
+                          repeat: Number.POSITIVE_INFINITY,
+                          repeatType: "reverse",
+                        }}
                       />
                     )}
+
+                    {/* Icon container with animated effects */}
+                    <div className="relative">
+                      <motion.div
+                        className={cn(
+                          "flex items-center justify-center p-2 rounded-lg transition-all duration-300",
+                          isActive
+                            ? `bg-gradient-to-br ${themeColors.bgGradient} text-white shadow-md ${themeColors.shadowColor}`
+                            : theme === "dark"
+                              ? "bg-gray-800/80"
+                              : "bg-gray-100/80",
+                        )}
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        {item.icon}
+
+                        {/* Animated ring effect */}
+                        {isActive && (
+                          <motion.div
+                            className={cn("absolute inset-0 rounded-lg border-2 border-white/20", "opacity-0")}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{
+                              opacity: [0, 0.5, 0],
+                              scale: [0.8, 1.2, 0.8],
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Number.POSITIVE_INFINITY,
+                              repeatType: "loop",
+                            }}
+                          />
+                        )}
+                      </motion.div>
+
+                      {/* Subtle glow effect */}
+                      <motion.div
+                        className={cn(
+                          "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-60",
+                          `bg-gradient-to-r ${themeColors.bgGradient}`,
+                          "blur-md -z-10",
+                        )}
+                        initial={{ opacity: 0 }}
+                        whileHover={{ opacity: 0.3 }}
+                      />
+                    </div>
+
+                    {/* Text with animated underline */}
+                    <div className="relative font-medium">
+                      {item.name}
+                      <motion.div
+                        className={cn(
+                          "absolute -bottom-1 left-0 h-[2px] w-0 rounded-full",
+                          `bg-gradient-to-r ${themeColors.bgGradient}`,
+                        )}
+                        initial={{ width: "0%" }}
+                        whileHover={{ width: "100%" }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </div>
+
+                    {/* Active indicator with animated dots */}
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeNavIndicator"
+                        className="absolute bottom-0 left-0 right-0 flex justify-center"
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      >
+                        <div
+                          className={cn(
+                            "flex items-center gap-1 px-2 py-0.5 rounded-t-lg",
+                            theme === "dark" ? "bg-gray-800" : "bg-white",
+                          )}
+                        >
+                          {[0, 1, 2].map((dot) => (
+                            <motion.div
+                              key={dot}
+                              className={cn("h-1 w-1 rounded-full", `bg-gradient-to-r ${themeColors.bgGradient}`)}
+                              initial={{ scale: 0.5 }}
+                              animate={{
+                                scale: dot === 1 ? [0.5, 1, 0.5] : [0.5, 0.8, 0.5],
+                              }}
+                              transition={{
+                                duration: dot === 1 ? 1.5 : 2,
+                                delay: dot * 0.2,
+                                repeat: Number.POSITIVE_INFINITY,
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Number indicator for item position */}
+                    <div
+                      className={cn(
+                        "absolute top-1 right-1 text-[8px] font-mono opacity-40",
+                        isActive ? "opacity-70" : "opacity-30",
+                      )}
+                    >
+                      0{idx + 1}
+                    </div>
                   </Link>
                 )
               })}
@@ -875,7 +1412,7 @@ export default function PremiumHeader() {
         </motion.div>
       </motion.header>
 
-      {/* Mobile menu */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -884,65 +1421,93 @@ export default function PremiumHeader() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-40 md:hidden"
           >
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black"
+              className="absolute inset-0 bg-black backdrop-blur-sm"
               onClick={() => setIsMenuOpen(false)}
             />
 
-            {/* Menu panel */}
             <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
+              variants={mobileMenuVariants}
+              initial="closed"
+              animate="open"
+              exit="closed"
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className={cn(
-                "absolute top-0 right-0 bottom-0 w-80 overflow-y-auto",
-                theme === "dark" ? "bg-gray-900 border-l border-gray-800" : "bg-white border-l border-gray-100",
+                "absolute top-0 right-0 bottom-0 w-80 overflow-y-auto shadow-xl rounded-l-2xl",
+                theme === "dark" ? "bg-gray-900/95 border-l border-gray-800" : "bg-white/95 border-l border-gray-200",
               )}
             >
-              <div className="p-4 flex justify-between items-center border-b border-gray-100 dark:border-gray-800">
-                <h2 className="font-bold text-lg">Menú</h2>
+              <div
+                className={cn(
+                  "p-4 flex justify-between items-center border-b",
+                  theme === "dark" ? "border-gray-800" : "border-gray-200",
+                )}
+              >
+                <h2 className={cn("font-bold text-lg", theme === "dark" ? "text-white" : "text-gray-900")}>
+                  Menú Principal
+                </h2>
                 <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setIsMenuOpen(false)}>
                   <X className="h-5 w-5" />
                 </Button>
               </div>
 
               <div className="p-4">
-                {/* User info */}
-                <div className={`p-4 rounded-xl bg-gradient-to-r ${themeColors.bgGradient} text-white mb-4`}>
-                  <div className="flex items-center gap-3">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className={cn(
+                    "p-4 rounded-xl mb-4 relative overflow-hidden",
+                    `bg-gradient-to-r ${themeColors.bgGradient}`,
+                  )}
+                >
+                  {/* Background pattern */}
+                  <div className="absolute inset-0 opacity-10">
+                    <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                      <pattern id="mobile-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" />
+                      </pattern>
+                      <rect width="100" height="100" fill="url(#mobile-grid)" />
+                    </svg>
+                  </div>
+
+                  <div className="flex items-center gap-3 relative z-10">
                     <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
-                      <User className="h-6 w-6" />
+                      <User className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <p className="font-medium">{user || "Usuario"}</p>
+                      <p className="font-medium text-white">{user || "Usuario"}</p>
                       <div className="flex items-center gap-1 text-xs text-white/80">
                         <Shield className="h-3 w-3" />
                         <span>Administrador</span>
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
-                {/* Navigation */}
-                <div className="space-y-2">
+                <motion.div
+                  variants={staggerChildrenVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-2 pb-4"
+                >
                   {navItems.map((item, index) => {
                     const isActive = typeof window !== "undefined" && isLinkActive(item.href)
                     return (
                       <motion.div
                         key={item.name}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
+                        variants={childVariants}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="overflow-hidden rounded-xl"
                       >
                         <Link
                           href={item.href}
                           className={cn(
-                            "flex items-center gap-3 px-3 py-3 rounded-xl",
+                            "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300",
                             isActive
                               ? `bg-gradient-to-r ${themeColors.bgGradient} text-white`
                               : theme === "dark"
@@ -963,78 +1528,56 @@ export default function PremiumHeader() {
                             <span className="font-medium">{item.name}</span>
                             {isActive && <p className="text-xs text-white/80">Sección actual</p>}
                           </div>
-                          {isActive && <Zap className="h-4 w-4" />}
+                          {isActive && <Sparkles className="h-4 w-4" />}
                         </Link>
                       </motion.div>
                     )
                   })}
-                </div>
+                </motion.div>
 
-                <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className={cn("mt-6 pt-6 border-t", theme === "dark" ? "border-gray-800" : "border-gray-200")}
+                >
                   <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Personalización</h3>
+                    <h3 className={cn("text-sm font-medium", theme === "dark" ? "text-gray-400" : "text-gray-500")}>
+                      Personalización
+                    </h3>
 
                     <div>
-                      <h4 className="text-xs text-gray-500 dark:text-gray-400 mb-2">Tema del Header</h4>
+                      <h4 className={cn("text-xs mb-2", theme === "dark" ? "text-gray-400" : "text-gray-500")}>
+                        Tema del Header
+                      </h4>
                       <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => changeColorTheme("green")}
-                          className="h-8 w-8 rounded-full bg-gradient-to-r from-green-600 to-green-500 shadow-lg shadow-green-500/20 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 ring-transparent transition-all duration-200"
-                          style={{
-                            ringColor: colorTheme === "green" ? "rgb(34 197 94)" : "transparent",
-                          }}
-                          aria-label="Tema Verde"
-                        />
-                        <button
-                          onClick={() => changeColorTheme("blue")}
-                          className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-600 to-blue-500 shadow-lg shadow-blue-500/20 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 ring-transparent transition-all duration-200"
-                          style={{
-                            ringColor: colorTheme === "blue" ? "rgb(59 130 246)" : "transparent",
-                          }}
-                          aria-label="Tema Azul"
-                        />
-                        <button
-                          onClick={() => changeColorTheme("purple")}
-                          className="h-8 w-8 rounded-full bg-gradient-to-r from-purple-600 to-purple-500 shadow-lg shadow-purple-500/20 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 ring-transparent transition-all duration-200"
-                          style={{
-                            ringColor: colorTheme === "purple" ? "rgb(168 85 247)" : "transparent",
-                          }}
-                          aria-label="Tema Púrpura"
-                        />
-                        <button
-                          onClick={() => changeColorTheme("amber")}
-                          className="h-8 w-8 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 shadow-lg shadow-amber-500/20 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 ring-transparent transition-all duration-200"
-                          style={{
-                            ringColor: colorTheme === "amber" ? "rgb(245 158 11)" : "transparent",
-                          }}
-                          aria-label="Tema Ámbar"
-                        />
-                        <button
-                          onClick={() => changeColorTheme("rose")}
-                          className="h-8 w-8 rounded-full bg-gradient-to-r from-rose-600 to-rose-500 shadow-lg shadow-rose-500/20 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 ring-transparent transition-all duration-200"
-                          style={{
-                            ringColor: colorTheme === "rose" ? "rgb(244 63 94)" : "transparent",
-                          }}
-                          aria-label="Tema Rosa"
-                        />
-                        <button
-                          onClick={() => changeColorTheme("teal")}
-                          className="h-8 w-8 rounded-full bg-gradient-to-r from-teal-600 to-teal-500 shadow-lg shadow-teal-500/20 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 ring-transparent transition-all duration-200"
-                          style={{
-                            ringColor: colorTheme === "teal" ? "rgb(20 184 166)" : "transparent",
-                          }}
-                          aria-label="Tema Teal"
-                        />
+                        {["green", "blue", "purple", "amber", "rose", "teal", "cyan"].map((color) => (
+                          <motion.button
+                            key={color}
+                            onClick={() => changeColorTheme(color as any)}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className={`h-8 w-8 rounded-full bg-gradient-to-r from-${color}-600 to-${color}-500 shadow-lg shadow-${color}-500/20 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 transition-all duration-200`}
+                            style={{
+                              ringColor: colorTheme === color ? `var(--${color}-500)` : "transparent",
+                            }}
+                            aria-label={`Tema ${color}`}
+                          />
+                        ))}
                       </div>
                     </div>
 
                     <div>
-                      <h4 className="text-xs text-gray-500 dark:text-gray-400 mb-2">Modo de Visualización</h4>
+                      <h4 className={cn("text-xs mb-2", theme === "dark" ? "text-gray-400" : "text-gray-500")}>
+                        Modo de Visualización
+                      </h4>
                       <div className="flex gap-2">
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => setTheme("light")}
                           className={cn(
-                            "flex-1 h-10 rounded-lg flex items-center justify-center gap-2 transition-all duration-200",
+                            "flex-1 h-10 rounded-xl flex items-center justify-center gap-2 transition-all duration-200",
                             theme === "light"
                               ? "bg-amber-100 text-amber-600 ring-2 ring-amber-500"
                               : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
@@ -1042,12 +1585,14 @@ export default function PremiumHeader() {
                           aria-label="Modo Claro"
                         >
                           <Sun className="h-4 w-4" />
-                          <span className="text-xs">Claro</span>
-                        </button>
-                        <button
+                          <span className="text-xs font-medium">Claro</span>
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => setTheme("dark")}
                           className={cn(
-                            "flex-1 h-10 rounded-lg flex items-center justify-center gap-2 transition-all duration-200",
+                            "flex-1 h-10 rounded-xl flex items-center justify-center gap-2 transition-all duration-200",
                             theme === "dark"
                               ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 ring-2 ring-blue-500"
                               : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
@@ -1055,12 +1600,14 @@ export default function PremiumHeader() {
                           aria-label="Modo Oscuro"
                         >
                           <Moon className="h-4 w-4" />
-                          <span className="text-xs">Oscuro</span>
-                        </button>
-                        <button
+                          <span className="text-xs font-medium">Oscuro</span>
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => setTheme("system")}
                           className={cn(
-                            "flex-1 h-10 rounded-lg flex items-center justify-center gap-2 transition-all duration-200",
+                            "flex-1 h-10 rounded-xl flex items-center justify-center gap-2 transition-all duration-200",
                             theme === "system"
                               ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 ring-2 ring-green-500"
                               : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
@@ -1068,26 +1615,33 @@ export default function PremiumHeader() {
                           aria-label="Modo Sistema"
                         >
                           <Laptop className="h-4 w-4" />
-                          <span className="text-xs">Auto</span>
-                        </button>
+                          <span className="text-xs font-medium">Auto</span>
+                        </motion.button>
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
-                  className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800"
+                  className={cn("mt-6 pt-6 border-t", theme === "dark" ? "border-gray-800" : "border-gray-200")}
                 >
-                  <Button
-                    onClick={handleLogout}
-                    className={`w-full bg-gradient-to-r ${themeColors.bgGradient} hover:opacity-90 text-white rounded-xl py-3 shadow-lg ${themeColors.shadowColor}`}
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Cerrar Sesión
-                  </Button>
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Button
+                      onClick={handleLogout}
+                      className={cn(
+                        "w-full bg-gradient-to-r text-white rounded-xl py-3 shadow-lg",
+                        themeColors.bgGradient,
+                        themeColors.shadowColor,
+                        "hover:opacity-90",
+                      )}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Cerrar Sesión
+                    </Button>
+                  </motion.div>
                 </motion.div>
               </div>
             </motion.div>
