@@ -5,7 +5,8 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence, useMotionValue } from "framer-motion"
 import {
-  Search,Download,
+  Search,
+  Download,
   Share2,
   ArrowLeft,
   Calendar,

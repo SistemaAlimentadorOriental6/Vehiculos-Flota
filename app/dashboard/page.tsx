@@ -32,7 +32,7 @@ import ProtectedRoute from "@/components/auth/protected-route"
 import { useAuth } from "@/hooks/use-auth"
 import VersionNotification from "@/components/version-notification"
 import Link from "next/link"
-import EnhancedGalleryView from "../../components/enhanced-photo-gallery"
+import EnhancedGalleryView from "../../components/gallery/gallery-view"
 import ImageWithLoading from "@/components/image-with-loading"
 import VehicleStatusDashboard from "../../components/dashboard/vehicle-status-dashboard"
 
@@ -864,7 +864,7 @@ export default function Dashboard() {
         <main className="flex-1 container mx-auto px-4 py-6">
           {/* Si estamos en la vista de galería, mostrar el componente de galería */}
           {view === "gallery" ? (
-            <EnhancedGalleryView />
+            <EnhancedGalleryView/>
           ) : (
             <RealDataProvider>
               <DashboardContent />
