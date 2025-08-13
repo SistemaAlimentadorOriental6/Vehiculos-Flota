@@ -121,6 +121,7 @@ function DashboardContent() {
   const pendingVehiclesCount = 261 - capturedVehiclesCount // Vehículos pendientes
   const progressPercentage = Math.round((capturedVehiclesCount / totalVehiclesCount) * 100)
 
+  
   // Variantes para animaciones
   const containerVariants = {
     hidden: { opacity: 0 },
