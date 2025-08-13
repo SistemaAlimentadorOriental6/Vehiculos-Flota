@@ -295,7 +295,7 @@ export default function VehicleStatusDashboard() {
                   <div>
                     <p className="text-xs text-white/80">Vehículos</p>
                     <p className="text-xl font-bold text-white">
-                      {allVehicles.length} <span className="text-sm font-normal">de 260</span>
+                      {allVehicles.length} <span className="text-sm font-normal">de 261</span>
                     </p>
                   </div>
                 </div>
@@ -320,7 +320,7 @@ export default function VehicleStatusDashboard() {
                   </div>
                   <div>
                     <p className="text-xs text-white/80">Pendientes</p>
-                    <p className="text-xl font-bold text-white">{260 - allVehicles.length}</p>
+                    <p className="text-xl font-bold text-white">{261 - allVehicles.length}</p>
                   </div>
                 </div>
               </div>
@@ -329,19 +329,19 @@ export default function VehicleStatusDashboard() {
             <div className="mt-4">
               <div className="flex justify-between items-center mb-2">
                 <p className="text-sm font-medium text-white">PROGRESO DE DOCUMENTACIÓN</p>
-                <p className="text-sm font-medium text-white">{allVehicles.length} de 260 vehículos</p>
+                <p className="text-sm font-medium text-white">{allVehicles.length} de 261 vehículos</p>
               </div>
               <div className="h-3 bg-white/20 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: `${(allVehicles.length / 260) * 100}%` }}
+                  animate={{ width: `${(allVehicles.length / 261) * 100}%` }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
                   className="h-full bg-white rounded-full"
                 />
               </div>
               <div className="flex justify-between mt-2 text-sm text-white/80">
                 <span>Completados: {completedVehicles.length}</span>
-                <span>Pendientes: {260 - allVehicles.length}</span>
+                <span>Pendientes: {261 - allVehicles.length}</span>
               </div>
             </div>
           </div>
