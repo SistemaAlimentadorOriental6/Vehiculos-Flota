@@ -116,9 +116,9 @@ function DashboardContent() {
   }).format(currentTime)
 
   // Datos para el progreso de vehículos
-  const totalVehiclesCount = 260 // Total de vehículos en el sistema
+  const totalVehiclesCount = 261 // Total de vehículos en el sistema
   const capturedVehiclesCount = allVehicles.length // Total de vehículos documentados
-  const pendingVehiclesCount = 260 - capturedVehiclesCount // Vehículos pendientes
+  const pendingVehiclesCount = 261 - capturedVehiclesCount // Vehículos pendientes
   const progressPercentage = Math.round((capturedVehiclesCount / totalVehiclesCount) * 100)
 
   // Variantes para animaciones
