@@ -103,10 +103,10 @@ export default function CapturaPage() {
     // Convertir a número para validar el rango
     const numId = Number.parseInt(vehicleId, 10)
 
-    if (isNaN(numId) || numId < 1 || numId > 260) {
+    if (isNaN(numId) || numId < 1 || numId > 261) {
       toast({
         title: "Error de validación",
-        description: "El número de vehículo debe estar entre 1 y 260",
+        description: "El número de vehículo debe estar entre 1 y 261",
         variant: "destructive",
       })
       return
